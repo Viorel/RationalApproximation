@@ -1,0 +1,83 @@
+﻿<Window x:Class="RationalApproximation.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RationalApproximation"
+        mc:Ignorable="d"
+        Title="MainWindow" d:Height="455" d:Width="678" 
+        SourceInitialized="Window_SourceInitialized"
+        Loaded="Window_Loaded" 
+        Closing="Window_Closing" d:DesignHeight="395.8" d:DesignWidth="643.333"
+        >
+    <Grid>
+
+        <Label VerticalAlignment="Top" Margin="10,10,0,0" Content="Number to approximate:" Target="{Binding ElementName=textBoxInput}" FontWeight="Bold" HorizontalAlignment="Left" />
+        <TextBox x:Name="textBoxInput" VerticalAlignment="Top" Margin="10,41,127,0" TextWrapping="Wrap" Text="" TextChanged="textBoxInput_TextChanged" FontSize="22" Padding="3 3" d:Text="12345" Grid.RowSpan="2" />
+
+        <Label VerticalAlignment="Top" Margin="0,13,21,0" Content="Digits to keep:" Target="{Binding ElementName=comboBoxDigits}" FontWeight="Bold" HorizontalAlignment="Right" Width="92" />
+        <ComboBox x:Name="comboBoxDigits" IsEditable="True" VerticalAlignment="Top" Margin="0,41,10,0" Grid.RowSpan="2" HorizontalAlignment="Right" Width="98"
+                  SelectionChanged="comboBoxDigits_SelectionChanged">
+            <ComboBoxItem>1</ComboBoxItem>
+            <ComboBoxItem>2</ComboBoxItem>
+            <ComboBoxItem>3</ComboBoxItem>
+            <ComboBoxItem>4</ComboBoxItem>
+            <ComboBoxItem IsSelected="True">5</ComboBoxItem>
+            <ComboBoxItem>6</ComboBoxItem>
+            <ComboBoxItem>7</ComboBoxItem>
+        </ComboBox>
+
+        <Label VerticalAlignment="Top" Margin="10,91,0,0" Content="Result" Target="{Binding ElementName=richTextBoxOutput}" FontWeight="Bold" HorizontalAlignment="Left" />
+
+        <Grid Margin="10,122,10,10" >
+            <RichTextBox x:Name="richTextBoxNote" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="14" d:Visibility="Hidden">
+                <FlowDocument>
+                    <Paragraph Padding="2 18">
+                        <Run Text="The result will be displayed here."/>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+
+            <RichTextBox x:Name="richTextBoxTypicalError" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
+                         FontSize="14" Padding="2 10"
+                         d:Visibility="Visible">
+                <FlowDocument>
+                    <Paragraph>
+                        <Run Text="The entered number is invalid."/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="Please enter a fraction or decimal number, for example:"/>
+                    </Paragraph>
+                    <Paragraph Margin="14 0">
+                        <Run Text="0.1234"/>
+                        <LineBreak/>
+                        <Run Text="-12.345"/>
+                        <LineBreak/>
+                        <Run Text="12.345e-6"/>
+                        <LineBreak/>
+                        <Run Text="1234/56789"/>
+                        <LineBreak/>
+                        <Run Text="-1234e+7/56789"/>
+                        <LineBreak/>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+
+            <RichTextBox x:Name="richTextBoxError" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" d:Visibility="Hidden">
+                <FlowDocument>
+                    <Paragraph Padding="2 18" FontSize="14" >
+                        <Run x:Name="runError" Text="Error"/>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+
+            <RichTextBox x:Name="richTextBoxResult" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="18" d:Visibility="Hidden">
+                <FlowDocument x:Name="flowDocument">
+                    <Paragraph>
+                        <Run x:Name="runResult" Text="Result"/>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+        </Grid>
+    </Grid>
+</Window>

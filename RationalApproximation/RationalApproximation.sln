@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RationalApproximationLibrary", "RationalApproximationLibrary\RationalApproximationLibrary.csproj", "{5FFE4924-81BA-3CEC-6D2C-36D4A73540EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RationalApproximation", "RationalApproximation\RationalApproximation.csproj", "{3AC94D54-0141-0EC2-093D-694A5139AEC9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5FFE4924-81BA-3CEC-6D2C-36D4A73540EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FFE4924-81BA-3CEC-6D2C-36D4A73540EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FFE4924-81BA-3CEC-6D2C-36D4A73540EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FFE4924-81BA-3CEC-6D2C-36D4A73540EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AC94D54-0141-0EC2-093D-694A5139AEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AC94D54-0141-0EC2-093D-694A5139AEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AC94D54-0141-0EC2-093D-694A5139AEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AC94D54-0141-0EC2-093D-694A5139AEC9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6B956743-855A-432C-88A5-8065A6D9AA9E}
+	EndGlobalSection
+EndGlobal
