@@ -3,6 +3,8 @@ using System.Numerics;
 
 namespace RationalApproximationLibrary
 {
+    // NOTE. Unused code is almost deleted.
+
     internal static class FractionUtilities
     {
         static readonly BigInteger Bi10 = 10;
@@ -131,18 +133,6 @@ namespace RationalApproximationLibrary
             return t;
         }
 
-        internal static int Compare( (BigInteger n, BigInteger d) f1, (BigInteger n, BigInteger d) f2 )
-        {
-            Debug.Assert( f1.d > 0 );
-            Debug.Assert( f2.d > 0 );
-
-            if( f1.n.IsZero && f2.n.IsZero ) return 0;
-            if( f1.n < 0 && f2.n >= 0 ) return -1;
-            if( f1.n > 0 && f2.n < 0 ) return +1;
-
-            return ( f1.n * f2.d ).CompareTo( f2.n * f1.d );
-        }
-
         internal static int Compare( (BigInteger n, BigInteger d, BigInteger e) f1, (BigInteger n, BigInteger d, BigInteger e) f2 )
         {
             Debug.Assert( f1.d > 0 );
@@ -254,24 +244,6 @@ namespace RationalApproximationLibrary
         internal static (BigInteger n, BigInteger d, BigInteger e) Abs( (BigInteger n, BigInteger d, BigInteger e) f )
         {
             return f.n < 0 ? (-f.n, f.d, f.e) : f;
-        }
-
-        internal static IEnumerable<BigInteger> EnumerateContinuedFractionGE0( BigInteger n, BigInteger d )
-        {
-            ArgumentOutOfRangeException.ThrowIfNegative( n );
-            if( d.IsZero ) throw new ArgumentOutOfRangeException( nameof( d ), "Zero denominator" );
-
-            for(; ; )
-            {
-                (BigInteger q, BigInteger r) = BigInteger.DivRem( n, d );
-
-                yield return q;
-
-                if( r.IsZero ) break;
-
-                n = d;
-                d = r;
-            }
         }
 
     }

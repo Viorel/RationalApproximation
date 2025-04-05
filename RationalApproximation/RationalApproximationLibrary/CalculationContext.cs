@@ -2,6 +2,8 @@
 
 namespace RationalApproximationLibrary
 {
+    // NOTE. Unused code is almost deleted.
+
     public class CalculationContext
     {
         int mMaxDigits;
@@ -19,9 +21,6 @@ namespace RationalApproximationLibrary
                 }
             }
         }
-        public bool IsCacheEnabled { get; set; } = true;
-        public bool IsSimpleDeductionEnabled { get; set; } = true;
-        public bool IsAlternativeDeductionTreeBrowsing { get; set; } = false;
 
         public BigInteger MinVal { get; private set; }
         public BigInteger MaxVal { get; private set; }
