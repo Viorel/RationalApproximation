@@ -26,7 +26,7 @@ namespace RationalApproximation
     {
         const int MAX_MAXDIGITS = 1000;
         readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 222 );
-        readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 222 );
+        readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 333 );
         readonly TimeSpan MIN_DURATION_PROGRESS = TimeSpan.FromMilliseconds( 333 );
 
         bool mLoaded = false;
@@ -231,25 +231,68 @@ namespace RationalApproximation
                 return null;
             }
 
+            // TODO: trim insignificant zeroes (in Regex)
+
             Match m = RegexToParseInput( ).Match( input_text );
 
             if( m.Groups["integer"].Success )
             {
                 bool is_negative = m.Groups["negative"].Success;
                 bool is_negative_exponent = m.Groups["negative_exponent"].Success;
-                Group after_point_group = m.Groups["after_point"];
+                Group floating_group = m.Groups["floating"];
+                Group repeating_group = m.Groups["repeating"];
                 Group exponent_group = m.Groups["exponent"];
 
                 BigInteger integer = BigInteger.Parse( m.Groups["integer"].Value, CultureInfo.InvariantCulture );
-                BigInteger after_point = after_point_group.Success ? BigInteger.Parse( after_point_group.Value, CultureInfo.InvariantCulture ) : BigInteger.Zero;
                 BigInteger exponent = exponent_group.Success ? BigInteger.Parse( exponent_group.Value, CultureInfo.InvariantCulture ) : BigInteger.Zero;
 
-                BigInteger significand = integer * BigInteger.Pow( 10, after_point_group.Value.Length ) + after_point; // TODO: trim insignificant zeroes (in Regex)
-                BigInteger adjusted_exponent = exponent -= after_point_group.Value.Length;
+                if( floating_group.Success || repeating_group.Success )
+                {
+                    // 123.45, 123.45(67), 123.(67), maybe with e
 
-                var fraction = new Fraction( is_negative ? -significand : significand, BigInteger.One, is_negative_exponent ? -adjusted_exponent : adjusted_exponent );
+                    BigInteger floating = floating_group.Success ? BigInteger.Parse( floating_group.Value, CultureInfo.InvariantCulture ) : BigInteger.Zero;
+                    int floating_length = floating_group.Success ? floating_group.Value.Length : 0;
+                    BigInteger floating_magnitude = BigInteger.Pow( 10, floating_length );
 
-                return fraction;
+                    if( repeating_group.Success )
+                    {
+                        // 123.45(67), 123.(67), maybe with e
+
+                        BigInteger repeating = BigInteger.Parse( repeating_group.Value, CultureInfo.InvariantCulture );
+                        int repeating_length = repeating_group.Value.Length;
+
+                        BigInteger repeating_magnitude = BigInteger.Pow( 10, repeating_length );
+
+                        BigInteger significant = integer * floating_magnitude + floating;
+                        BigInteger significant_with_repeating = significant * repeating_magnitude + repeating;
+                        Debug.Assert( significant_with_repeating >= significant );
+                        BigInteger nominator = significant_with_repeating - significant;
+                        BigInteger denominator = floating_magnitude * ( repeating_magnitude - 1 );
+
+                        Fraction fraction = new( is_negative ? -nominator : nominator, denominator, is_negative_exponent ? -exponent : exponent );
+
+                        return fraction;
+                    }
+                    else
+                    {
+                        // 123.45, maybe with e
+
+                        BigInteger significant = integer * floating_magnitude + floating;
+                        BigInteger adjusted_exponent = exponent - floating_length;
+
+                        Fraction fraction = new( is_negative ? -significant : significant, BigInteger.One, is_negative_exponent ? -adjusted_exponent : adjusted_exponent );
+
+                        return fraction;
+                    }
+                }
+                else
+                {
+                    // 123, 123e45
+
+                    Fraction fraction = new( is_negative ? -integer : integer, BigInteger.One, is_negative_exponent ? -exponent : exponent );
+
+                    return fraction;
+                }
             }
 
             if( m.Groups["nominator"].Success )
@@ -303,12 +346,13 @@ namespace RationalApproximation
         {
             try
             {
-                BigInteger max_value = BigInteger.Pow( 10, maxDigits ) - 1;
+                CalculationContext ctx = new( cnc, maxDigits );
 
                 Fraction approximated_fraction =
                     fraction
+                        .Simplify( ctx )
                         .TrimZeroes( cnc )
-                        .Reduce( cnc, max_value, noE: true )
+                        .Reduce( cnc, ctx.MaxVal, noE: true )
                         .TrimZeroes( cnc );
 
                 if( approximated_fraction.Equals( cnc, fraction ) ) approximated_fraction = approximated_fraction.AsNonApprox( );
@@ -596,7 +640,8 @@ namespace RationalApproximation
             (
              (
               (\+|(?<negative>-))? \s* (?<integer>\d+) 
-              ((\s* \. \s* (?<after_point>\d+)) | \.)? 
+              ((\s* \. \s* (?<floating>\d+)) | \.)? 
+              (\s* \( \s* (?<repeating>\d+) \s* \) )? 
               (\s* [eE] \s* (\+|(?<negative_exponent>-))? \s* (?<exponent>\d+))? 
              )
             |
