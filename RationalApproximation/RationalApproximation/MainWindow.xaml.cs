@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using RationalApproximationLibrary;
 
 namespace RationalApproximation
@@ -23,11 +24,20 @@ namespace RationalApproximation
     /// </summary>
     public partial class MainWindow : Window
     {
+        const int MAX_MAXDIGITS = 1000;
+        readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 222 );
+        readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 222 );
+        readonly TimeSpan MIN_DURATION_PROGRESS = TimeSpan.FromMilliseconds( 333 );
+
         bool mLoaded = false;
         bool mIsRestoreError = false;
-        readonly DispatcherTimer mTextChangedTimer;
+        readonly DispatcherTimer mCalculationTimer;
         Thread? mCalculationThread = null;
         SimpleCancellable? mLastCancellable = null;
+        readonly DispatcherTimer mProgressTimer = new( );
+        DateTime mProgressShownTime = DateTime.MinValue;
+        enum ProgressStatusEnum { None, DelayToShow, DelayToHide };
+        ProgressStatusEnum mProgressStatus = ProgressStatusEnum.None;
 
         public MainWindow( )
         {
@@ -37,13 +47,15 @@ namespace RationalApproximation
             richTextBoxTypicalError.Visibility = Visibility.Hidden;
             richTextBoxError.Visibility = Visibility.Hidden;
             richTextBoxResult.Visibility = Visibility.Hidden;
+            labelPleaseWait.Visibility = Visibility.Hidden;
 
-            mTextChangedTimer = new DispatcherTimer
+            mCalculationTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds( 222 )
+                Interval = DELAY_BEFORE_CALCULATION,
             };
-            mTextChangedTimer.Tick += MTextChangedTimer_Tick;
+            mCalculationTimer.Tick += CalculationTimer_Tick;
 
+            mProgressTimer.Tick += ProgressTimer_Tick;
         }
 
         private void Window_SourceInitialized( object sender, EventArgs e )
@@ -66,16 +78,24 @@ namespace RationalApproximation
         {
             mLoaded = true;
 
+            ApplySavedData( );
+
             textBoxInput.Focus( );
             textBoxInput.SelectAll( );
+
+            //RestartCalculations( );
         }
 
         private void Window_Closing( object sender, System.ComponentModel.CancelEventArgs e )
         {
+            mCalculationTimer.Stop( );
+            StopThread( );
+
             if( !mIsRestoreError ) // avoid overwriting details in case of errors
             {
                 try
                 {
+                    SaveData( );
                     SaveWindowPlacement( );
                 }
                 catch( Exception exc )
@@ -90,26 +110,58 @@ namespace RationalApproximation
         {
             if( !mLoaded ) return;
 
-            mTextChangedTimer.Stop( );
-            mTextChangedTimer.Start( );
+            RestartCalculationTimer( );
         }
 
-        private void comboBoxDigits_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        private void comboBoxDigits_TextChanged( object sender, TextChangedEventArgs e )
         {
             if( !mLoaded ) return;
 
-            mTextChangedTimer.Stop( );
-            mTextChangedTimer.Start( );
+            RestartCalculationTimer( );
         }
 
-        private void MTextChangedTimer_Tick( object? sender, EventArgs e )
+        private void CalculationTimer_Tick( object? sender, EventArgs e )
         {
-            mTextChangedTimer.Stop( );
+            mCalculationTimer.Stop( );
 
             RestartCalculations( );
         }
 
-        private void RestartCalculations( )
+        void RestartCalculationTimer( )
+        {
+            mCalculationTimer.Stop( );
+            mCalculationTimer.Start( );
+            ShowProgress( );
+        }
+
+        void ApplySavedData( )
+        {
+            try
+            {
+                textBoxInput.Text = Properties.Settings.Default.LastInput;
+                if( !string.IsNullOrWhiteSpace( Properties.Settings.Default.LastMaxDigits ) )
+                {
+                    comboBoxDigits.Text = Properties.Settings.Default.LastMaxDigits.Trim( );
+                }
+            }
+            catch( Exception exc )
+            {
+                if( Debugger.IsAttached ) Debugger.Break( );
+                else Debug.Fail( exc.Message, exc.ToString( ) );
+
+                // ignore
+            }
+        }
+
+        void SaveData( )
+        {
+            Properties.Settings.Default.LastInput = textBoxInput.Text;
+            Properties.Settings.Default.LastMaxDigits = comboBoxDigits.Text;
+
+            Properties.Settings.Default.Save( );
+        }
+
+        void StopThread( )
         {
             try
             {
@@ -120,6 +172,21 @@ namespace RationalApproximation
                     mCalculationThread.Join( 99 );
                     mCalculationThread = null;
                 }
+            }
+            catch( Exception exc )
+            {
+                if( Debugger.IsAttached ) Debugger.Break( );
+                else Debug.Fail( exc.Message, exc.ToString( ) );
+
+                // ignore?
+            }
+        }
+
+        void RestartCalculations( )
+        {
+            try
+            {
+                StopThread( );
 
                 Fraction? fraction = GetInputFraction( );
                 if( fraction == null ) return;
@@ -148,12 +215,21 @@ namespace RationalApproximation
 
                 runError.Text = error_text;
                 ShowOneRichTextBox( richTextBoxError );
+                HideProgress( );
             }
         }
 
         Fraction? GetInputFraction( )
         {
             string input_text = textBoxInput.Text;
+
+            if( string.IsNullOrWhiteSpace( input_text ) )
+            {
+                ShowOneRichTextBox( richTextBoxNote );
+                HideProgress( );
+
+                return null;
+            }
 
             Match m = RegexToParseInput( ).Match( input_text );
 
@@ -191,6 +267,7 @@ namespace RationalApproximation
                 {
                     runError.Text = "Denominator cannot be zero.";
                     ShowOneRichTextBox( richTextBoxError );
+                    HideProgress( );
 
                     return null;
                 }
@@ -201,18 +278,20 @@ namespace RationalApproximation
             }
 
             ShowOneRichTextBox( richTextBoxTypicalError );
+            HideProgress( );
 
             return null;
         }
 
-        private int? GetDigitsToKeep( )
+        int? GetDigitsToKeep( )
         {
             string digits_as_string = comboBoxDigits.Text;
 
-            if( !int.TryParse( digits_as_string, out int digits ) )
+            if( !int.TryParse( digits_as_string, out int digits ) || digits <= 0 || digits > MAX_MAXDIGITS )
             {
-                runError.Text = "Please enter or select a valid number of digits.";
+                runError.Text = $"Please enter a valid number of digits between 1 and {MAX_MAXDIGITS}.";
                 ShowOneRichTextBox( richTextBoxError );
+                HideProgress( );
 
                 return null;
             }
@@ -235,6 +314,7 @@ namespace RationalApproximation
                 if( approximated_fraction.Equals( cnc, fraction ) ) approximated_fraction = approximated_fraction.AsNonApprox( );
 
                 ShowResult( cnc, fraction, approximated_fraction, maxDigits );
+                HideProgress( );
             }
             catch( OperationCanceledException ) // also 'TaskCanceledException'
             {
@@ -250,10 +330,11 @@ namespace RationalApproximation
 
                 runError.Text = error_text;
                 ShowOneRichTextBox( richTextBoxError );
+                HideProgress( );
             }
         }
 
-        private void ShowResult( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, int maxDigits )
+        void ShowResult( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, int maxDigits )
         {
             BigInteger max_value_exclusive_div_10 = BigInteger.Pow( 10, maxDigits - 1 );
 
@@ -276,7 +357,7 @@ namespace RationalApproximation
 
             string fraction_as_string = $"{( is_negative ? -n : n ):D}";
             if( !e.IsZero ) fraction_as_string = $"{fraction_as_string}e{( e < 0 ? '-' : '+' )}{e:D}";
-            if( !d.IsOne ) fraction_as_string = $"{fraction_as_string}/{d:D}";
+            if( !d.IsOne ) fraction_as_string = $"{fraction_as_string} / {d:D}";
 
             string notes = "";
 
@@ -319,6 +400,89 @@ namespace RationalApproximation
             richTextBox.Visibility = Visibility.Visible;
         }
 
+        #region Progress indicator
+
+        void ShowProgress( )
+        {
+            mProgressTimer.Stop( );
+            mProgressStatus = ProgressStatusEnum.None;
+
+            if( mProgressShownTime != DateTime.MinValue )
+            {
+#if DEBUG
+                Dispatcher.Invoke( ( ) =>
+                {
+                    Debug.Assert( labelPleaseWait.Visibility == Visibility.Visible );
+                } );
+#endif
+                return;
+            }
+            else
+            {
+                mProgressStatus = ProgressStatusEnum.DelayToShow;
+                mProgressTimer.Interval = DELAY_BEFORE_PROGRESS;
+                mProgressTimer.Start( );
+            }
+        }
+
+        void HideProgress( bool rightNow = false )
+        {
+            mProgressTimer.Stop( );
+            mProgressStatus = ProgressStatusEnum.None;
+
+            if( rightNow || mProgressShownTime == DateTime.MinValue )
+            {
+                Dispatcher.Invoke( ( ) => labelPleaseWait.Visibility = Visibility.Hidden );
+                mProgressShownTime = DateTime.MinValue;
+            }
+            else
+            {
+#if DEBUG
+                Dispatcher.Invoke( ( ) =>
+                {
+                    Debug.Assert( labelPleaseWait.Visibility == Visibility.Visible );
+                } );
+#endif
+
+                TimeSpan elapsed = DateTime.Now - mProgressShownTime;
+
+                if( elapsed >= MIN_DURATION_PROGRESS )
+                {
+                    Dispatcher.Invoke( ( ) => labelPleaseWait.Visibility = Visibility.Hidden );
+                    mProgressShownTime = DateTime.MinValue;
+                }
+                else
+                {
+                    mProgressStatus = ProgressStatusEnum.DelayToHide;
+                    mProgressTimer.Interval = MIN_DURATION_PROGRESS - elapsed;
+                    mProgressTimer.Start( );
+                }
+            }
+        }
+
+        private void ProgressTimer_Tick( object? sender, EventArgs e )
+        {
+            mProgressTimer.Stop( );
+
+            switch( mProgressStatus )
+            {
+            case ProgressStatusEnum.DelayToShow:
+                labelPleaseWait.Visibility = Visibility.Visible;
+                mProgressShownTime = DateTime.Now;
+                break;
+            case ProgressStatusEnum.DelayToHide:
+                labelPleaseWait.Visibility = Visibility.Hidden;
+                mProgressShownTime = DateTime.MinValue;
+                break;
+            default:
+                Debug.Assert( false );
+                break;
+            }
+
+            mProgressStatus = ProgressStatusEnum.None;
+        }
+
+        #endregion
 
         #region Window placement
 

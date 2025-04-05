@@ -58,5 +58,29 @@ namespace RationalApproximation.Properties {
                 this["RestoreBoundsWH"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastInput {
+            get {
+                return ((string)(this["LastInput"]));
+            }
+            set {
+                this["LastInput"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastMaxDigits {
+            get {
+                return ((string)(this["LastMaxDigits"]));
+            }
+            set {
+                this["LastMaxDigits"] = value;
+            }
+        }
     }
 }

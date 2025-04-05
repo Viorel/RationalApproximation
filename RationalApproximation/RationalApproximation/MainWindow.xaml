@@ -17,7 +17,7 @@
 
         <Label VerticalAlignment="Top" Margin="0,13,21,0" Content="_Digits to keep:" Target="{Binding ElementName=comboBoxDigits}" FontWeight="Bold" HorizontalAlignment="Right" Width="92" />
         <ComboBox x:Name="comboBoxDigits" IsEditable="True" VerticalAlignment="Top" Margin="0,41,10,0" Grid.RowSpan="2" HorizontalAlignment="Right" Width="98" FontSize="22"
-                  SelectionChanged="comboBoxDigits_SelectionChanged" Height="38" VerticalContentAlignment="Center">
+                  Height="38" VerticalContentAlignment="Center" TextBoxBase.TextChanged="comboBoxDigits_TextChanged">
             <ComboBoxItem>1</ComboBoxItem>
             <ComboBoxItem>2</ComboBoxItem>
             <ComboBoxItem>3</ComboBoxItem>
@@ -85,7 +85,7 @@
                             </Style>
                         </Section.Resources>
                         <Paragraph>
-                            <Run Text="Floating point form:"/>
+                            <Run Text="Floating point form: "/>
                             <Run x:Name="runResultFloatingPointForm" FontWeight="Bold" d:Text="0.1234567"/>
                         </Paragraph>
                         <Paragraph>
@@ -98,6 +98,8 @@
                     </Section>
                 </FlowDocument>
             </RichTextBox>
+            <Label x:Name="labelPleaseWait" Content="Calculation in progress... " VerticalAlignment="Bottom" HorizontalAlignment="Left" BorderBrush="Gray" BorderThickness="0.25" 
+                   Visibility="Hidden" d:Visibility="Visible"/>
         </Grid>
     </Grid>
 </Window>
