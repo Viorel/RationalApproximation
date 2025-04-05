@@ -8,7 +8,7 @@
         Title="Rational Approximation" Width="600" Height="371"  
         SourceInitialized="Window_SourceInitialized"
         Loaded="Window_Loaded" 
-        Closing="Window_Closing" 
+        Closing="Window_Closing" Icon="/RationalApproximation.ico" 
         >
     <Grid>
 
