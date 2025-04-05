@@ -27,6 +27,7 @@ namespace RationalApproximation
         bool mIsRestoreError = false;
         readonly DispatcherTimer mTextChangedTimer;
         Thread? mCalculationThread = null;
+        SimpleCancellable? mLastCancellable = null;
 
         public MainWindow( )
         {
@@ -114,8 +115,9 @@ namespace RationalApproximation
             {
                 if( mCalculationThread != null )
                 {
+                    mLastCancellable?.SetCancel( );
                     mCalculationThread.Interrupt( );
-                    mCalculationThread.Join( 11 );
+                    mCalculationThread.Join( 99 );
                     mCalculationThread = null;
                 }
 
@@ -125,9 +127,10 @@ namespace RationalApproximation
                 int? digits = GetDigitsToKeep( );
                 if( digits == null ) return;
 
+                mLastCancellable = new SimpleCancellable( );
                 mCalculationThread = new Thread( ( ) =>
                     {
-                        CalculationThreadProc( ICancellable.NonCancellable, fraction, digits.Value );
+                        CalculationThreadProc( mLastCancellable, fraction, digits.Value );
                     } )
                 {
                     IsBackground = true,
@@ -138,7 +141,12 @@ namespace RationalApproximation
             }
             catch( Exception exc )
             {
-                runError.Text = $"Something went wrong.\r\n\r\n{exc.Message}";
+                if( Debugger.IsAttached ) Debugger.Break( );
+
+                string error_text = $"Something went wrong.\r\n\r\n{exc.Message}";
+                if( Debugger.IsAttached ) error_text = $"{error_text}\r\n{exc.StackTrace}";
+
+                runError.Text = error_text;
                 ShowOneRichTextBox( richTextBoxError );
             }
         }
@@ -214,16 +222,45 @@ namespace RationalApproximation
 
         void CalculationThreadProc( ICancellable cnc, Fraction fraction, int maxDigits )
         {
-            BigInteger max_value = BigInteger.Pow( 10, maxDigits ) - 1;
+            try
+            {
+                BigInteger max_value = BigInteger.Pow( 10, maxDigits ) - 1;
+
+                Fraction approximated_fraction =
+                    fraction
+                        .TrimZeroes( cnc )
+                        .Reduce( cnc, max_value, noE: true )
+                        .TrimZeroes( cnc );
+
+                if( approximated_fraction.Equals( cnc, fraction ) ) approximated_fraction = approximated_fraction.AsNonApprox( );
+
+                ShowResult( cnc, fraction, approximated_fraction, maxDigits );
+            }
+            catch( OperationCanceledException ) // also 'TaskCanceledException'
+            {
+                // (the operation is supposed to be restarted)
+                return;
+            }
+            catch( Exception exc )
+            {
+                if( Debugger.IsAttached ) Debugger.Break( );
+
+                string error_text = $"Something went wrong.\r\n\r\n{exc.Message}";
+                if( Debugger.IsAttached ) error_text = $"{error_text}\r\n{exc.StackTrace}";
+
+                runError.Text = error_text;
+                ShowOneRichTextBox( richTextBoxError );
+            }
+        }
+
+        private void ShowResult( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, int maxDigits )
+        {
             BigInteger max_value_exclusive_div_10 = BigInteger.Pow( 10, maxDigits - 1 );
 
-            Fraction approximated_fraction = fraction.TrimZeroes( cnc ).Reduce( cnc, max_value, noE: true );
-            approximated_fraction = approximated_fraction.TrimZeroes( cnc );
-
-            bool is_negative = approximated_fraction.IsNegative;
-            BigInteger n = BigInteger.Abs( approximated_fraction.N );
-            BigInteger d = approximated_fraction.D;
-            BigInteger e = approximated_fraction.E;
+            bool is_negative = approximatedFraction.IsNegative;
+            BigInteger n = BigInteger.Abs( approximatedFraction.N );
+            BigInteger d = approximatedFraction.D;
+            BigInteger e = approximatedFraction.E;
 
             while( e > 0 && n < max_value_exclusive_div_10 )
             {
@@ -238,14 +275,36 @@ namespace RationalApproximation
             }
 
             string fraction_as_string = $"{( is_negative ? -n : n ):D}";
+            if( !e.IsZero ) fraction_as_string = $"{fraction_as_string}e{( e < 0 ? '-' : '+' )}{e:D}";
             if( !d.IsOne ) fraction_as_string = $"{fraction_as_string}/{d:D}";
-            if( !e.IsZero ) fraction_as_string = $"{fraction_as_string} * 10^{e:D}";
 
-            string result_text = $"{fraction_as_string}\r\n{approximated_fraction.ToFloatString( cnc, 8000 )}";
+            string notes = "";
+
+            if( !e.IsZero )
+            {
+                notes = $"{notes}An exponent is required since the number is not in [-1...+1].\r\n";
+            }
+
+            if( approximatedFraction.Equals( cnc, initialFraction ) )
+            {
+                notes = $"{notes}The initial and approximated fractions are equal.\r\n";
+            }
+
+            notes = notes.TrimEnd( );
+
+            string floating_point_form = approximatedFraction.ToFloatString( cnc, 15 );
+
+            CalculationContext ctx = new( cnc, 333 );
+            Fraction difference = Fraction.Abs( Fraction.Sub( initialFraction, approximatedFraction, ctx ), ctx );
+            string difference_as_string = difference.ToFloatString( cnc, 8 );
 
             Dispatcher.BeginInvoke( ( ) =>
             {
-                runResult.Text = result_text;
+                runResult.Text = fraction_as_string;
+                runResultNotes.Text = notes;
+                runResultFloatingPointForm.Text = floating_point_form;
+                runResultDifference.Text = difference_as_string;
+
                 ShowOneRichTextBox( richTextBoxResult );
             } );
         }

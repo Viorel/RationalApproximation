@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RationalApproximationLibrary", "RationalApproximationLibrary\RationalApproximationLibrary.csproj", "{5FFE4924-81BA-3CEC-6D2C-36D4A73540EF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RationalApproximation", "RationalApproximation\RationalApproximation.csproj", "{3AC94D54-0141-0EC2-093D-694A5139AEC9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RationalApproximationLibrary", "RationalApproximationLibrary\RationalApproximationLibrary.csproj", "{5FFE4924-81BA-3CEC-6D2C-36D4A73540EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

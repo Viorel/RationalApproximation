@@ -5,19 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RationalApproximation"
         mc:Ignorable="d"
-        Title="MainWindow" d:Height="455" d:Width="678" 
+        Title="Rational Approximation" Width="600" Height="371"  
         SourceInitialized="Window_SourceInitialized"
         Loaded="Window_Loaded" 
-        Closing="Window_Closing" d:DesignHeight="395.8" d:DesignWidth="643.333"
+        Closing="Window_Closing" 
         >
     <Grid>
 
-        <Label VerticalAlignment="Top" Margin="10,10,0,0" Content="Number to approximate:" Target="{Binding ElementName=textBoxInput}" FontWeight="Bold" HorizontalAlignment="Left" />
-        <TextBox x:Name="textBoxInput" VerticalAlignment="Top" Margin="10,41,127,0" TextWrapping="Wrap" Text="" TextChanged="textBoxInput_TextChanged" FontSize="22" Padding="3 3" d:Text="12345" Grid.RowSpan="2" />
+        <Label VerticalAlignment="Top" Margin="10,10,0,0" Content="_Number or fraction to approximate:" Target="{Binding ElementName=textBoxInput}" FontWeight="Bold" HorizontalAlignment="Left" />
+        <TextBox x:Name="textBoxInput" VerticalAlignment="Top" Margin="10,41,127,0" Text="" TextChanged="textBoxInput_TextChanged" FontSize="22" Padding="3 3" d:Text="12345" Grid.RowSpan="2" VerticalContentAlignment="Center" Height="38" />
 
-        <Label VerticalAlignment="Top" Margin="0,13,21,0" Content="Digits to keep:" Target="{Binding ElementName=comboBoxDigits}" FontWeight="Bold" HorizontalAlignment="Right" Width="92" />
-        <ComboBox x:Name="comboBoxDigits" IsEditable="True" VerticalAlignment="Top" Margin="0,41,10,0" Grid.RowSpan="2" HorizontalAlignment="Right" Width="98"
-                  SelectionChanged="comboBoxDigits_SelectionChanged">
+        <Label VerticalAlignment="Top" Margin="0,13,21,0" Content="_Digits to keep:" Target="{Binding ElementName=comboBoxDigits}" FontWeight="Bold" HorizontalAlignment="Right" Width="92" />
+        <ComboBox x:Name="comboBoxDigits" IsEditable="True" VerticalAlignment="Top" Margin="0,41,10,0" Grid.RowSpan="2" HorizontalAlignment="Right" Width="98" FontSize="22"
+                  SelectionChanged="comboBoxDigits_SelectionChanged" Height="38" VerticalContentAlignment="Center">
             <ComboBoxItem>1</ComboBoxItem>
             <ComboBoxItem>2</ComboBoxItem>
             <ComboBoxItem>3</ComboBoxItem>
@@ -25,22 +25,23 @@
             <ComboBoxItem IsSelected="True">5</ComboBoxItem>
             <ComboBoxItem>6</ComboBoxItem>
             <ComboBoxItem>7</ComboBoxItem>
+            <ComboBoxItem>8</ComboBoxItem>
         </ComboBox>
 
-        <Label VerticalAlignment="Top" Margin="10,91,0,0" Content="Result" Target="{Binding ElementName=richTextBoxOutput}" FontWeight="Bold" HorizontalAlignment="Left" />
+        <Label VerticalAlignment="Top" Margin="10,91,0,0" Content="_Approximated fraction:" Target="{Binding ElementName=richTextBoxResult}" FontWeight="Bold" HorizontalAlignment="Left" />
 
         <Grid Margin="10,122,10,10" >
             <RichTextBox x:Name="richTextBoxNote" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="14" d:Visibility="Hidden">
                 <FlowDocument>
                     <Paragraph Padding="2 18">
-                        <Run Text="The result will be displayed here."/>
+                        <Run Text="The results will be displayed here." FontStyle="Italic"/>
                     </Paragraph>
                 </FlowDocument>
             </RichTextBox>
 
             <RichTextBox x:Name="richTextBoxTypicalError" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
                          FontSize="14" Padding="2 10"
-                         d:Visibility="Visible">
+                         d:Visibility="Hidden">
                 <FlowDocument>
                     <Paragraph>
                         <Run Text="The entered number is invalid."/>
@@ -48,7 +49,7 @@
                     <Paragraph>
                         <Run Text="Please enter a fraction or decimal number, for example:"/>
                     </Paragraph>
-                    <Paragraph Margin="14 0">
+                    <Paragraph Margin="14 0" FontWeight="Bold">
                         <Run Text="0.1234"/>
                         <LineBreak/>
                         <Run Text="-12.345"/>
@@ -71,11 +72,30 @@
                 </FlowDocument>
             </RichTextBox>
 
-            <RichTextBox x:Name="richTextBoxResult" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="18" d:Visibility="Hidden">
+            <RichTextBox x:Name="richTextBoxResult" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" d:Visibility="Visible" IsReadOnlyCaretVisible="True" IsReadOnly="True">
                 <FlowDocument x:Name="flowDocument">
-                    <Paragraph>
-                        <Run x:Name="runResult" Text="Result"/>
+                    <Paragraph Margin="4" Padding="0 4 0 8" FontWeight="Bold" FontSize="24"
+                               BorderBrush="Gray" BorderThickness="0 0 0 0">
+                        <Run x:Name="runResult" d:Text="12345/67890"/>
                     </Paragraph>
+                    <Section FontSize="18">
+                        <Section.Resources>
+                            <Style TargetType="Paragraph">
+                                <Setter Property="Margin" Value="4 8"/>
+                            </Style>
+                        </Section.Resources>
+                        <Paragraph>
+                            <Run Text="Floating point form:"/>
+                            <Run x:Name="runResultFloatingPointForm" FontWeight="Bold" d:Text="0.1234567"/>
+                        </Paragraph>
+                        <Paragraph>
+                            <Run Text="Difference: "/>
+                            <Run x:Name="runResultDifference" FontWeight="Bold" d:Text="1.7e-10"/>
+                        </Paragraph>
+                        <Paragraph>
+                            <Run x:Name="runResultNotes" d:Text="Notes"/>
+                        </Paragraph>
+                    </Section>
                 </FlowDocument>
             </RichTextBox>
         </Grid>

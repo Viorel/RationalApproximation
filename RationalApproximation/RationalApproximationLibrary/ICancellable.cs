@@ -13,31 +13,32 @@ namespace RationalApproximationLibrary
 
         bool TryThrow( ) // only returns false, or throws the exception
         {
-            if( IsCancellationRequested )
-            {
-                throw new OperationCanceledException( );
-            }
-
-            return false;
+            return IsCancellationRequested ? throw new OperationCanceledException( ) : false;
         }
 
         public static ICancellable NonCancellable => RationalApproximationLibrary.NonCancellable.Instance;
     }
 
-
-    public sealed class NonCancellable : ICancellable
+    sealed class NonCancellable : ICancellable
     {
         public static readonly ICancellable Instance = new NonCancellable( );
 
         #region ICancellable
 
-        public bool IsCancellationRequested
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsCancellationRequested => false;
+
+        #endregion ICancellable
+    }
+
+    public sealed class SimpleCancellable : ICancellable
+    {
+        bool mCancel = false;
+
+        public void SetCancel( ) => mCancel = true;
+
+        #region ICancellable
+
+        public bool IsCancellationRequested => mCancel;
 
         #endregion ICancellable
     }
