@@ -703,6 +703,156 @@ namespace RationalApproximationLibrary
         }
 
         /// <summary>
+        /// Multiplication.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        public static Fraction Mul( Fraction left, Fraction right, CalculationContext ctx )
+        {
+            if( left.IsUndefined ) return Undefined;
+            if( right.IsUndefined ) return Undefined;
+
+            // -∞ * -∞ =  ∞
+            // -∞ *  ∞ = -∞
+            // -∞ *  0 = undefined
+            // -∞ * -3 =  ∞
+            // -∞ *  3 = -∞
+            //  ∞ *  ∞ =  ∞
+            //  ∞ *  0 = undefined
+            //  ∞ * -3 = -∞
+            //  ∞ *  3 =  ∞
+
+            if( left.IsZero )
+            {
+                if( right.IsNegativeInfinity || right.IsPositiveInfinity ) return Undefined;
+
+                return Zero.UnionApprox( left ); // (no 'right')
+            }
+
+            if( right.IsZero )
+            {
+                if( left.IsNegativeInfinity || left.IsPositiveInfinity ) return Undefined;
+
+                return Zero.UnionApprox( right ); // (no 'left')
+            }
+
+            if( left.IsNegativeInfinity )
+            {
+                if( right.IsNegativeInfinity ) return PositiveInfinity;
+                if( right.IsPositiveInfinity ) return NegativeInfinity;
+                if( right.IsNegative ) return PositiveInfinity;
+
+                Debug.Assert( right.IsPositiveNonZero );
+
+                return NegativeInfinity;
+            }
+
+            if( right.IsNegativeInfinity )
+            {
+                if( left.IsPositiveInfinity ) return NegativeInfinity;
+                if( left.IsNegative ) return PositiveInfinity;
+
+                Debug.Assert( left.IsPositiveNonZero );
+
+                return NegativeInfinity;
+            }
+
+            if( left.IsPositiveInfinity )
+            {
+                if( right.IsNegativeInfinity ) return NegativeInfinity;
+                if( right.IsPositiveInfinity ) return PositiveInfinity;
+                if( right.IsNegative ) return NegativeInfinity;
+
+                Debug.Assert( right.IsPositiveNonZero );
+
+                return PositiveInfinity;
+            }
+
+            if( right.IsPositiveInfinity )
+            {
+                if( left.IsNegative ) return NegativeInfinity;
+
+                Debug.Assert( left.IsPositiveNonZero );
+
+                return PositiveInfinity;
+            }
+
+            Debug.Assert( left.IsNormal );
+            Debug.Assert( right.IsNormal );
+            Debug.Assert( !left.IsZero );
+            Debug.Assert( !right.IsZero );
+
+            left = left.Simplify( ctx );
+            right = right.Simplify( ctx );
+
+            return new Fraction( left.N * right.N, left.D * right.D, left.E + right.E, isApprox: left.IsApprox || right.IsApprox, isSimplified: false ).Reduce( ctx );
+        }
+
+        /// <summary>
+        /// Division.
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <param name="ctx"></param>
+        /// <returns></returns>
+        public static Fraction Div( Fraction left, Fraction right, CalculationContext ctx )
+        {
+            if( left.IsUndefined ) return Undefined;
+            if( right.IsUndefined ) return Undefined;
+
+            // -∞ / -∞ = undefined
+            // -∞ /  ∞ = undefined
+            // -∞ /  0 = undefined (or complex infinity)
+            // -∞ / -3 = ∞
+            // -∞ /  3 = -∞
+            //  ∞ /  -∞ = undefined
+            //  ∞ /  ∞ = undefined
+            //  ∞ /  0 = undefined (or complex infinity)
+            //  ∞ / -3 = -∞
+            //  ∞ / 3 = ∞
+            //  3 / -∞ = 0
+            //  3 / ∞ = 0
+            //  3 / 0 = undefined (or complex infinity)
+            //  0 / 0 = undefined
+            //  0 / * = 0
+
+            if( left.IsNegativeInfinity )
+            {
+                if( right.IsNegative ) return PositiveInfinity;
+                if( right.IsPositiveNonZero ) return NegativeInfinity;
+
+                return Undefined;
+            }
+
+            if( left.IsPositiveInfinity )
+            {
+                if( right.IsNegative ) return NegativeInfinity;
+                if( right.IsPositiveNonZero ) return PositiveInfinity;
+
+                return Undefined;
+            }
+
+            Debug.Assert( left.IsNormal );
+
+            if( left.IsZero )
+            {
+                if( right.IsZero ) return Undefined;
+
+                return left.UnionApprox( right );
+            }
+
+            if( right.IsAnyInfinity ) return Zero; // (no approx)
+
+            Debug.Assert( right.IsNormal );
+
+            if( right.IsZero ) return Undefined;
+
+            return new Fraction( left.N * right.D * right.N.Sign, left.D * BigInteger.Abs( right.N ), left.E - right.E, isApprox: left.IsApprox || right.IsApprox, isSimplified: false ).Reduce( ctx );
+        }
+
+        /// <summary>
         /// Subtraction.
         /// </summary>
         /// <param name="left"></param>
@@ -754,6 +904,28 @@ namespace RationalApproximationLibrary
 
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Try to convert to double.
+        /// </summary>
+        /// <returns></returns>
+        public double ToDouble( )
+        {
+            if( IsUndefined ) return double.NaN;
+            if( IsNegativeInfinity ) return double.NegativeInfinity;
+            if( IsPositiveInfinity ) return double.PositiveInfinity;
+            if( IsZero ) return 0.0;
+            if( QuickTestOne ) return 1.0;
+            if( QuickTestMinusOne ) return -1.0;
+
+            Debug.Assert( IsNormal );
+
+            DFloat n = new( N, E );
+            DFloat d = new( D );
+            DFloat f = DFloat.Div( n, d, Math.Max( Math.Max( N.GetByteCount( ), D.GetByteCount( ) ), sizeof( double ) ) + 4 );
+
+            return f.ToDouble( );
         }
 
         /// <summary>

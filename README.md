@@ -13,7 +13,7 @@ Input         | Rational Approximation
 1234 / 5678	  |	153 / 704
 
 The program support repeating (recurring) decimals using “(&#xA0;)”, 
-as well as exponents using “e”:
+as well as exponents:
 
 Input         | Rational Approximation
 :---          | :--- 

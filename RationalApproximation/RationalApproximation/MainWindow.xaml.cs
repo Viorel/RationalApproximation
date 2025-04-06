@@ -420,15 +420,29 @@ namespace RationalApproximation
             string floating_point_form = approximatedFraction.ToFloatString( cnc, 15 );
 
             CalculationContext ctx = new( cnc, 333 );
-            Fraction difference = Fraction.Abs( Fraction.Sub( initialFraction, approximatedFraction, ctx ), ctx );
-            string difference_as_string = difference.ToFloatString( cnc, 8 );
+            Fraction absolute_error = Fraction.Abs( Fraction.Sub( initialFraction, approximatedFraction, ctx ), ctx );
+            string absolute_error_as_string = absolute_error.ToFloatString( cnc, 8 );
+
+            string percent_error_as_string;
+
+            if( initialFraction.IsZero )
+            {
+                percent_error_as_string = "—";
+            }
+            else
+            {
+                Fraction percent_error = Fraction.Mul( Fraction.Div( absolute_error, initialFraction, ctx ), new Fraction( 100 ), ctx );
+
+                percent_error_as_string = $"{percent_error.ToDouble( ):F2}%";
+            }
 
             Dispatcher.BeginInvoke( ( ) =>
             {
                 runResult.Text = fraction_as_string;
                 runResultNotes.Text = notes;
                 runResultFloatingPointForm.Text = floating_point_form;
-                runResultDifference.Text = difference_as_string;
+                runResultAbsoluteError.Text = absolute_error_as_string;
+                runResultPercentError.Text = percent_error_as_string;
 
                 ShowOneRichTextBox( richTextBoxResult );
             } );

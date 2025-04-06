@@ -89,8 +89,13 @@
                             <Run x:Name="runResultFloatingPointForm" FontWeight="Bold" d:Text="0.1234567"/>
                         </Paragraph>
                         <Paragraph>
-                            <Run Text="Difference: "/>
-                            <Run x:Name="runResultDifference" FontWeight="Bold" d:Text="1.7e-10"/>
+                            <Run Text="Absolute error: "/>
+                            <Run x:Name="runResultAbsoluteError" FontWeight="Bold" d:Text="1.7e-10"/>
+                            <Span>
+                                <LineBreak/>
+                                <Run Text="Percent error: "/>
+                                <Run x:Name="runResultPercentError" FontWeight="Bold" d:Text="0.02%"/>
+                            </Span>
                         </Paragraph>
                         <Paragraph>
                             <Run x:Name="runResultNotes" d:Text="Notes"/>
