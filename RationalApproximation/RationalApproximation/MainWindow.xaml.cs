@@ -346,13 +346,13 @@ namespace RationalApproximation
         {
             try
             {
-                CalculationContext ctx = new( cnc, maxDigits );
+                BigInteger max_val = BigInteger.Pow( 10, maxDigits ) - 1;
 
                 Fraction approximated_fraction =
                     fraction
-                        .Simplify( ctx )
+                        .Simplify( new CalculationContext( cnc, 33 ) )
                         .TrimZeroes( cnc )
-                        .Reduce( cnc, ctx.MaxVal, noE: true )
+                        .Reduce( cnc, max_val, noE: true )
                         .TrimZeroes( cnc );
 
                 if( approximated_fraction.Equals( cnc, fraction ) ) approximated_fraction = approximated_fraction.AsNonApprox( );
@@ -372,9 +372,12 @@ namespace RationalApproximation
                 string error_text = $"Something went wrong.\r\n\r\n{exc.Message}";
                 if( Debugger.IsAttached ) error_text = $"{error_text}\r\n{exc.StackTrace}";
 
-                runError.Text = error_text;
-                ShowOneRichTextBox( richTextBoxError );
-                HideProgress( );
+                Dispatcher.BeginInvoke( ( ) =>
+                {
+                    runError.Text = error_text;
+                    ShowOneRichTextBox( richTextBoxError );
+                    HideProgress( );
+                } );
             }
         }
 
@@ -419,7 +422,7 @@ namespace RationalApproximation
 
             string floating_point_form = approximatedFraction.ToFloatString( cnc, 15 );
 
-            CalculationContext ctx = new( cnc, 333 );
+            CalculationContext ctx = new( cnc, 33 );
             Fraction absolute_error = Fraction.Abs( Fraction.Sub( initialFraction, approximatedFraction, ctx ), ctx );
             string absolute_error_as_string = absolute_error.ToFloatString( cnc, 8 );
 
@@ -433,7 +436,7 @@ namespace RationalApproximation
             {
                 Fraction percent_error = Fraction.Mul( Fraction.Div( absolute_error, initialFraction, ctx ), new Fraction( 100 ), ctx );
 
-                percent_error_as_string = $"{percent_error.ToDouble( ):F2}%";
+                percent_error_as_string = $"{( percent_error.IsApprox ? "≈" : "" )}{percent_error.ToDouble( ):g4}%";
             }
 
             Dispatcher.BeginInvoke( ( ) =>
