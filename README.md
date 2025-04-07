@@ -12,7 +12,7 @@ Input         | Rational Approximation
 0.12345		  | 119 / 964
 1234 / 5678	  |	153 / 704
 
-The program support repeating (recurring) decimals using “(&#xA0;)”, 
+The program support repeating (recurring) decimals using the “(&#xA0;)” notation, 
 as well as exponents:
 
 Input         | Rational Approximation
@@ -38,15 +38,13 @@ Input         | Rational Approximation
 
 The program runs in this environment:
 
-* * Windows 11 or Windows 10,
+* Windows 11 or Windows 10 (64-bit),
 * .NET 9.
 
-Download and unzip the archive from the **Releases** section. Launch the **RationalApproximation** executable.
+Download and unzip the latest archive from the **Releases** section. Launch the **RationalApproximation** executable.
 
-Alternatively, the source files, which are got from the **Releases** section, can be compiled in Visual Studio 2022
-that includes the “.NET desktop development” workload.
-
-The program is made in C#, WPF.
+Alternatively, the source files, which are got from the **Releases** section too, can be compiled in Visual Studio 2022
+that includes the “.NET desktop development” workload. The program is made in C#, WPF.
 
 <br/>
 <br/>
