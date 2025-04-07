@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 
 namespace RationalApproximationLibrary
 {
+    // NOTE. Unused code is almost deleted.
+
     /// <summary>
     /// A floating point number defined as <i>“m * 10**e”</i>.<br/>
     /// <i>m</i> -- mantissa, integer number, positive or negative,<br/>

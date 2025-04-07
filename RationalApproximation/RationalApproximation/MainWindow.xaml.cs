@@ -25,6 +25,7 @@ namespace RationalApproximation
     public partial class MainWindow : Window
     {
         const int MAX_MAXDIGITS = 1000;
+        const int ACCEPTABLE_PERCENT_ERROR = 10;
         readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 222 );
         readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 333 );
         readonly TimeSpan MIN_DURATION_PROGRESS = TimeSpan.FromMilliseconds( 333 );
@@ -62,7 +63,7 @@ namespace RationalApproximation
         {
             try
             {
-                RestoreWindowPlacement( );
+                //RestoreWindowPlacement( );
                 RestoreMaximizedState( );
             }
             catch( Exception exc )
@@ -238,13 +239,14 @@ namespace RationalApproximation
             if( m.Groups["integer"].Success )
             {
                 bool is_negative = m.Groups["negative"].Success;
-                bool is_negative_exponent = m.Groups["negative_exponent"].Success;
+                bool is_exponent_negative = m.Groups["negative_exponent"].Success;
                 Group floating_group = m.Groups["floating"];
                 Group repeating_group = m.Groups["repeating"];
                 Group exponent_group = m.Groups["exponent"];
 
                 BigInteger integer = BigInteger.Parse( m.Groups["integer"].Value, CultureInfo.InvariantCulture );
                 BigInteger exponent = exponent_group.Success ? BigInteger.Parse( exponent_group.Value, CultureInfo.InvariantCulture ) : BigInteger.Zero;
+                if( is_exponent_negative ) exponent = -exponent;
 
                 if( floating_group.Success || repeating_group.Success )
                 {
@@ -269,7 +271,7 @@ namespace RationalApproximation
                         BigInteger nominator = significant_with_repeating - significant;
                         BigInteger denominator = floating_magnitude * ( repeating_magnitude - 1 );
 
-                        Fraction fraction = new( is_negative ? -nominator : nominator, denominator, is_negative_exponent ? -exponent : exponent );
+                        Fraction fraction = new( is_negative ? -nominator : nominator, denominator, exponent );
 
                         return fraction;
                     }
@@ -280,7 +282,7 @@ namespace RationalApproximation
                         BigInteger significant = integer * floating_magnitude + floating;
                         BigInteger adjusted_exponent = exponent - floating_length;
 
-                        Fraction fraction = new( is_negative ? -significant : significant, BigInteger.One, is_negative_exponent ? -adjusted_exponent : adjusted_exponent );
+                        Fraction fraction = new( is_negative ? -significant : significant, BigInteger.One, adjusted_exponent );
 
                         return fraction;
                     }
@@ -289,7 +291,7 @@ namespace RationalApproximation
                 {
                     // 123, 123e45
 
-                    Fraction fraction = new( is_negative ? -integer : integer, BigInteger.One, is_negative_exponent ? -exponent : exponent );
+                    Fraction fraction = new( is_negative ? -integer : integer, BigInteger.One, exponent );
 
                     return fraction;
                 }
@@ -298,13 +300,14 @@ namespace RationalApproximation
             if( m.Groups["nominator"].Success )
             {
                 bool is_negative = m.Groups["negative"].Success;
-                bool is_negative_exponent = m.Groups["negative_exponent"].Success;
+                bool is_exponent_negative = m.Groups["negative_exponent"].Success;
                 Group denominator_group = m.Groups["denominator"];
                 Group exponent_group = m.Groups["exponent"];
 
                 BigInteger nominator = BigInteger.Parse( m.Groups["nominator"].Value, CultureInfo.InvariantCulture );
                 BigInteger denominator = denominator_group.Success ? BigInteger.Parse( denominator_group.Value, CultureInfo.InvariantCulture ) : BigInteger.One;
                 BigInteger exponent = exponent_group.Success ? BigInteger.Parse( exponent_group.Value, CultureInfo.InvariantCulture ) : BigInteger.Zero;
+                if( is_exponent_negative ) exponent = -exponent;
 
                 if( denominator.IsZero )
                 {
@@ -315,9 +318,19 @@ namespace RationalApproximation
                     return null;
                 }
 
-                var fraction = new Fraction( is_negative ? -nominator : nominator, denominator, is_negative_exponent ? -exponent : exponent );
+                var fraction = new Fraction( is_negative ? -nominator : nominator, denominator, exponent );
 
                 return fraction;
+            }
+
+            if( m.Groups["pi"].Success )
+            {
+                return Fraction.Pi;
+            }
+
+            if( m.Groups["e"].Success )
+            {
+                return Fraction.EulerNumber;
             }
 
             ShowOneRichTextBox( richTextBoxTypicalError );
@@ -347,17 +360,39 @@ namespace RationalApproximation
             try
             {
                 BigInteger max_val = BigInteger.Pow( 10, maxDigits ) - 1;
+                CalculationContext ctx = new( cnc, 33 );
 
                 Fraction approximated_fraction =
                     fraction
-                        .Simplify( new CalculationContext( cnc, 33 ) )
+                        .Simplify( ctx )
                         .TrimZeroes( cnc )
-                        .Reduce( cnc, max_val, noE: true )
+                        .ReduceNoE( cnc, max_val )
                         .TrimZeroes( cnc );
 
-                if( approximated_fraction.Equals( cnc, fraction ) ) approximated_fraction = approximated_fraction.AsNonApprox( );
+                Fraction? alternative = null;
 
-                ShowResult( cnc, fraction, approximated_fraction, maxDigits );
+                if( approximated_fraction.Equals( cnc, fraction ) )
+                {
+                    approximated_fraction = approximated_fraction.AsNonApprox( );
+                }
+                else
+                {
+                    Fraction absolute_error = Fraction.Sub( approximated_fraction, fraction, ctx );
+                    Fraction percent_error = Fraction.Mul( Fraction.Div( absolute_error, fraction, ctx ), new Fraction( 100 ), ctx );
+                    Fraction percent_error_abs = Fraction.Abs( percent_error, ctx );
+
+                    if( percent_error_abs.CompareTo( cnc, new Fraction( ACCEPTABLE_PERCENT_ERROR ) ) > 0 )
+                    {
+                        alternative =
+                            fraction
+                                .Simplify( ctx )
+                                .TrimZeroes( cnc )
+                                .Reduce( cnc, max_val )
+                                .TrimZeroes( cnc );
+                    }
+                }
+
+                ShowResult( cnc, fraction, approximated_fraction, alternative, maxDigits );
                 HideProgress( );
             }
             catch( OperationCanceledException ) // also 'TaskCanceledException'
@@ -381,74 +416,130 @@ namespace RationalApproximation
             }
         }
 
-        void ShowResult( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, int maxDigits )
+        void ShowResult( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, Fraction? alternative, int maxDigits )
         {
-            BigInteger max_value_exclusive_div_10 = BigInteger.Pow( 10, maxDigits - 1 );
+            var strings = MakeStrings( cnc, initialFraction, approximatedFraction, maxDigits );
 
-            bool is_negative = approximatedFraction.IsNegative;
-            BigInteger n = BigInteger.Abs( approximatedFraction.N );
-            BigInteger d = approximatedFraction.D;
-            BigInteger e = approximatedFraction.E;
-
-            while( e > 0 && n < max_value_exclusive_div_10 )
-            {
-                n *= 10;
-                --e;
-            }
-
-            while( e < 0 && d < max_value_exclusive_div_10 )
-            {
-                d *= 10;
-                ++e;
-            }
-
-            string fraction_as_string = $"{( is_negative ? -n : n ):D}";
-            if( !e.IsZero ) fraction_as_string = $"{fraction_as_string}e{( e < 0 ? '-' : '+' )}{e:D}";
-            if( !d.IsOne ) fraction_as_string = $"{fraction_as_string} / {d:D}";
-
-            string notes = "";
-
-            if( !e.IsZero )
-            {
-                notes = $"{notes}An exponent is required since the number is not in [-1...+1].\r\n";
-            }
-
-            if( approximatedFraction.Equals( cnc, initialFraction ) )
-            {
-                notes = $"{notes}The initial and approximated fractions are equal.\r\n";
-            }
-
-            notes = notes.TrimEnd( );
-
-            string floating_point_form = approximatedFraction.ToFloatString( cnc, 15 );
-
-            CalculationContext ctx = new( cnc, 33 );
-            Fraction absolute_error = Fraction.Abs( Fraction.Sub( initialFraction, approximatedFraction, ctx ), ctx );
-            string absolute_error_as_string = absolute_error.ToFloatString( cnc, 8 );
-
-            string percent_error_as_string;
-
-            if( initialFraction.IsZero )
-            {
-                percent_error_as_string = "—";
-            }
-            else
-            {
-                Fraction percent_error = Fraction.Mul( Fraction.Div( absolute_error, initialFraction, ctx ), new Fraction( 100 ), ctx );
-
-                percent_error_as_string = $"{( percent_error.IsApprox ? "≈" : "" )}{percent_error.ToDouble( ):g4}%";
-            }
+            strings.remarks = strings.remarks.TrimEnd( );
 
             Dispatcher.BeginInvoke( ( ) =>
             {
-                runResult.Text = fraction_as_string;
-                runResultNotes.Text = notes;
-                runResultFloatingPointForm.Text = floating_point_form;
-                runResultAbsoluteError.Text = absolute_error_as_string;
-                runResultPercentError.Text = percent_error_as_string;
+                runResultRationalApproximation.Text = strings.fraction_as_string;
+                runResultRationalApproximationNote.Text = strings.note;
+                runResultFloatingPointForm.Text = strings.floating_point_form;
+                runResultAbsoluteError.Text = strings.absolute_error_as_string;
+                runResultPercentError.Text = strings.percent_error_as_string;
+                runResultRemarks.Text = strings.remarks;
 
                 ShowOneRichTextBox( richTextBoxResult );
             } );
+
+            if( alternative == null )
+            {
+                Dispatcher.BeginInvoke( ( ) =>
+                {
+                    if( sectionAlternativeParent.Blocks.Contains( sectionAlternative ) ) sectionAlternativeParent.Blocks.Remove( sectionAlternative );
+                } );
+            }
+            else
+            {
+                var strings_alternative = MakeStrings( cnc, initialFraction, alternative, maxDigits );
+                strings_alternative.remarks = strings_alternative.remarks.TrimEnd( );
+
+                Dispatcher.BeginInvoke( ( ) =>
+                {
+                    if( !sectionAlternativeParent.Blocks.Contains( sectionAlternative ) ) sectionAlternativeParent.Blocks.Add( sectionAlternative );
+
+                    runResultRationalApproximation2.Text = strings_alternative.fraction_as_string;
+                    runResultRationalApproximationNote2.Text = strings_alternative.note;
+                    runResultFloatingPointForm2.Text = strings_alternative.floating_point_form;
+                    runResultAbsoluteError2.Text = strings_alternative.absolute_error_as_string;
+                    runResultPercentError2.Text = strings_alternative.percent_error_as_string;
+                    runResultRemarks2.Text = strings_alternative.remarks;
+                } );
+            }
+
+            static
+                (
+                    string fraction_as_string,
+                    string note,
+                    string floating_point_form,
+                    string absolute_error_as_string,
+                    string percent_error_as_string,
+                    string remarks
+                )
+                MakeStrings( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, int maxDigits )
+            {
+                string fraction_as_string;
+                string note = "";
+                string floating_point_form;
+                string absolute_error_as_string;
+                string percent_error_as_string;
+                string remarks = "";
+
+                if( approximatedFraction.Equals( cnc, initialFraction ) )
+                {
+                    remarks = $"{remarks}The given value and its approximation are equal.\r\n";
+                    note = "(exact)";
+                }
+
+                BigInteger max_value_exclusive_div_10 = BigInteger.Pow( 10, maxDigits - 1 );
+
+                bool is_negative = approximatedFraction.IsNegative;
+                BigInteger n = BigInteger.Abs( approximatedFraction.N );
+                BigInteger d = approximatedFraction.D;
+                BigInteger e = approximatedFraction.E;
+
+                while( e > 0 && n < max_value_exclusive_div_10 )
+                {
+                    n *= 10;
+                    --e;
+                }
+
+                while( e < 0 && d < max_value_exclusive_div_10 )
+                {
+                    d *= 10;
+                    ++e;
+                }
+
+                fraction_as_string = $"{( is_negative ? -n : n ):D}";
+                if( !e.IsZero ) fraction_as_string = $"{fraction_as_string}e{( e >= 0 ? "+" : "" )}{e:D}";
+                if( !d.IsOne ) fraction_as_string = $"{fraction_as_string} / {d:D}";
+
+                floating_point_form = approximatedFraction.ToFloatString( cnc, 15 );
+
+                CalculationContext ctx = new( cnc, 33 );
+                Fraction absolute_error = Fraction.Sub( approximatedFraction, initialFraction, ctx );
+                absolute_error_as_string = absolute_error.ToFloatString( cnc, 8 );
+
+                if( initialFraction.IsZero )
+                {
+                    percent_error_as_string = "—";
+                }
+                else
+                {
+                    Fraction percent_error = Fraction.Mul( Fraction.Div( absolute_error, initialFraction, ctx ), new Fraction( 100 ), ctx );
+                    Fraction percent_error_abs = Fraction.Abs( percent_error, ctx );
+
+                    percent_error_as_string = $"{( percent_error.IsApprox ? "≈" : "" )}{percent_error.ToDouble( ):g4}%";
+
+                    if( percent_error_abs.CompareTo( cnc, new Fraction( ACCEPTABLE_PERCENT_ERROR ) ) > 0 )
+                    {
+                        remarks = $"{remarks}The error is too large. Not enough digits.\r\n";
+                        note = "(underflow)";
+                    }
+                }
+
+                return
+                    (
+                        fraction_as_string,
+                        note,
+                        floating_point_form,
+                        absolute_error_as_string,
+                        percent_error_as_string,
+                        remarks
+                    );
+            }
         }
 
         void ShowOneRichTextBox( RichTextBox richTextBox )
@@ -653,7 +744,7 @@ namespace RationalApproximation
 
 
         [GeneratedRegex( """
-            (?xn)^ \s* 
+            (?xni)^ \s* 
             (
              (
               (\+|(?<negative>-))? \s* (?<integer>\d+) 
@@ -668,7 +759,11 @@ namespace RationalApproximation
               \s* / \s*
               (?<denominator>\d+) 
              )
-            )
+            |
+             (?<pi>pi)
+            |
+             (?<e>e)
+                        )
             \s* $
             """, RegexOptions.IgnorePatternWhitespace
         )]

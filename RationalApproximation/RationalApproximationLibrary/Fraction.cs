@@ -66,6 +66,19 @@ namespace RationalApproximationLibrary
         public static Fraction Four { get; } = new Fraction( 4, 1, 0, isApprox: false, isSimplified: true );
         public static Fraction Ten { get; } = new Fraction( 10, 1, 0, isApprox: false, isSimplified: true );
 
+        #region Common constants
+
+        // from WolframAlpha:
+        const string PiString = "3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582231725359408128481117450284102701938521105559644622948954930381964428810975665933446128475648233786783165271201909145648566923460348610454326648213393607260249141273724587";
+        static readonly Lazy<Fraction> PiLarge = new( ( ) => TryParse( PiString )!.AsApprox( ) );
+        public static Fraction Pi => PiLarge.Value;
+
+        // from WolframAlpha, "exp(1)":
+        const string EulerNumberString = "2.71828182845904523536028747135266249775724709369995957496696762772407663035354759457138217852516642742746639193200305992181741359662904357290033429526059563073813232862794349076323382988075319525101901157383418793070215408914993488416750924476146066808226480016847741185374234544243710753907774499206955170";
+        static readonly Lazy<Fraction> EulerNumberLarge = new( ( ) => TryParse( EulerNumberString.Trim( ) )!.AsApprox( ) );
+        public static Fraction EulerNumber => EulerNumberLarge.Value;
+
+        #endregion
 
         Fraction( )
         {
@@ -355,27 +368,44 @@ namespace RationalApproximationLibrary
         }
 
         /// <summary>
-        /// Get the nearest fraction, were N and D do not exceed a limit.
+        /// Get the nearest fraction, were N and D do not exceed a limit. 
+        /// Avoid the results that include an exponent.
         /// </summary>
         /// <param name="cnc"></param>
         /// <param name="maxVal"></param>
         /// <returns></returns>
-        public Fraction Reduce( ICancellable cnc, BigInteger maxVal, bool noE = false )
+        public Fraction ReduceNoE( ICancellable cnc, BigInteger maxVal )
         {
+            if( maxVal <= 0 ) throw new ArgumentOutOfRangeException( nameof( maxVal ), $"'{nameof( maxVal )}' must be positive" );
+
             if( !IsNormal ) return this;
             if( IsZero ) return this;
             if( QuickTestOne ) return One.UnionApprox( IsApprox );
             if( QuickTestMinusOne ) return MinusOne.UnionApprox( IsApprox );
 
-            if( noE && ( this.CompareTo( cnc, MinusOne ) > 0 && this.CompareTo( cnc, One ) < 0 ) )
+            if( E.IsZero && N >= -maxVal && N <= maxVal && D <= maxVal )
             {
-                // 'this' is ]-1...+1[
+                // nothing to reduce
 
-                if( E > 1000 ) throw new ApplicationException( "Too large E." ); //........
+                return this;
+            }
+
+            if( this.CompareTo( cnc, new Fraction( -1, 1, -1000 ) ) > 0 && this.CompareTo( cnc, new Fraction( 1, 1, -1000 ) ) < 0 )
+            {
+                // too small, close to zero
+
+                return Zero;
+            }
+
+            if( this.CompareTo( cnc, MinusOne ) > 0 && this.CompareTo( cnc, One ) < 0 ) // ]-1...+1[
+            {
+                // 'this' is ]-1...+1[, not too close to zero, abs(E) is not too large
 
                 BigInteger n1 = BigInteger.Abs( N );
                 BigInteger d1 = D;
                 BigInteger e1 = E;
+
+                // eliminate E
 
                 while( e1 < 0 )
                 {
@@ -395,6 +425,60 @@ namespace RationalApproximationLibrary
 
                 return new Fraction( IsNegative ? -result.n : result.n, result.d, BigInteger.Zero, isApprox: true, isSimplified: false );
             }
+
+            if( this.CompareTo( cnc, new Fraction( -1, 1, 1000 ) ) > 0 && this.CompareTo( cnc, new Fraction( 1, 1, 1000 ) ) < 0 ) // not in [-1...+1], but not too large (E not too large)
+            {
+                BigInteger n1 = BigInteger.Abs( N );
+                BigInteger d1 = D;
+                BigInteger e1 = E;
+
+                // eliminate E
+
+                while( e1 < 0 )
+                {
+                    d1 *= Bi10;
+                    ++e1;
+                }
+
+                while( e1 > 0 )
+                {
+                    n1 *= Bi10;
+                    --e1;
+                }
+
+                Debug.Assert( e1 == 0 );
+                Debug.Assert( n1 > d1 );
+
+                (BigInteger n, BigInteger d) result1 = FareyInternal( cnc, d1, n1, maxVal );
+
+                Debug.Assert( result1.n < result1.d );
+
+                if( !result1.n.IsZero )
+                {
+                    return new Fraction( IsNegative ? -result1.d : result1.d, result1.n, BigInteger.Zero, isApprox: true, isSimplified: false );
+                }
+                // else the number is too large
+            }
+
+            // the number is too large
+
+            return new Fraction( IsNegative ? -maxVal : maxVal, BigInteger.One, BigInteger.Zero, isApprox: true, isSimplified: false );
+        }
+
+        /// <summary>
+        /// Get the nearest fraction, were N and D do not exceed a limit.
+        /// </summary>
+        /// <param name="cnc"></param>
+        /// <param name="maxVal"></param>
+        /// <returns></returns>
+        public Fraction Reduce( ICancellable cnc, BigInteger maxVal )
+        {
+            if( maxVal <= 0 ) throw new ArgumentOutOfRangeException( nameof( maxVal ), $"'{nameof( maxVal )}' must be positive" );
+
+            if( !IsNormal ) return this;
+            if( IsZero ) return this;
+            if( QuickTestOne ) return One.UnionApprox( IsApprox );
+            if( QuickTestMinusOne ) return MinusOne.UnionApprox( IsApprox );
 
             if( N >= -maxVal && N <= maxVal && D <= maxVal )
             {

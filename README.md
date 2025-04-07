@@ -5,7 +5,7 @@ giving a maximum size (in digits) of nominator and denominator.
 
 #### Examples of calculations
 
-(Let us limit the nominator and denominator to three digits).
+(_Let us limit the nominator and denominator to three digits_).
 
 Input         | Rational Approximation
 :---          | :--- 
@@ -22,12 +22,13 @@ Input         | Rational Approximation
 0.8(9)        | 9 / 10
 1.234e-4      | 617 / 5
 
-If the input number is too large (not in [-1...+1]), then the result
-may include an exponent, for example:
+If the input number is too close to zero or too large, and the maximum number of digits is insufficient, 
+then the result may include an exponent, for example:
 
 Input         | Rational Approximation
 :---          | :--- 
-123.45		  | 458e+2 / 371
+1.2345e-7     |	458e-7 / 371 
+12345		  | 458e+4 / 371
 1234567/89	  |	799e+4 / 576
 
 #### A view of the program
