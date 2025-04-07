@@ -63,7 +63,7 @@ namespace RationalApproximation
         {
             try
             {
-                //RestoreWindowPlacement( );
+                RestoreWindowPlacement( );
                 RestoreMaximizedState( );
             }
             catch( Exception exc )

@@ -28,13 +28,27 @@ then the result may include an exponent, for example:
 Input         | Rational Approximation
 :---          | :--- 
 1.2345e-7     |	458e-7 / 371 
-12345		  | 458e+4 / 371
 1234567/89	  |	799e+4 / 576
 
 #### A view of the program
 
 ![Screenshot](Screenshot1.png)
 
+### Usage
+
+The program runs in this environment:
+
+* * Windows 11 or Windows 10,
+* .NET 9.
+
+Download and unzip the archive from the **Releases** section. Launch the **RationalApproximation** executable.
+
+Alternatively, the source files, which are got from the **Releases** section, can be compiled in Visual Studio 2022
+that includes the “.NET desktop development” workload.
+
+The program is made in C#, WPF.
+
 <br/>
 <br/>
 <br/>
+
