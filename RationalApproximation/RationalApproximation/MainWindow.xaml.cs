@@ -26,7 +26,7 @@ namespace RationalApproximation
     {
         const int MAX_MAXDIGITS = 1000;
         const int ACCEPTABLE_PERCENT_ERROR = 10;
-        readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 222 );
+        readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 333 );
         readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 333 );
         readonly TimeSpan MIN_DURATION_PROGRESS = TimeSpan.FromMilliseconds( 333 );
 
@@ -526,7 +526,7 @@ namespace RationalApproximation
                     if( percent_error_abs.CompareTo( cnc, new Fraction( ACCEPTABLE_PERCENT_ERROR ) ) > 0 )
                     {
                         remarks = $"{remarks}The error is too large. Not enough digits.\r\n";
-                        note = "(underflow)";
+                        note = approximatedFraction.IsZero ? "(underflow)" : "(overflow)";
                     }
                 }
 
@@ -760,7 +760,7 @@ namespace RationalApproximation
               (?<denominator>\d+) 
              )
             |
-             (?<pi>pi)
+             (?<pi>pi | π)
             |
              (?<e>e)
                         )

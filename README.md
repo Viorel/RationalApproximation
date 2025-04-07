@@ -1,6 +1,6 @@
 # Rational Approximation
 
-A tool to find the rational approximation of decimal numbers and fractions, 
+An experimental tool to find the rational approximation of decimal numbers and fractions, 
 giving a maximum size (in digits) of nominator and denominator.
 
 #### Examples of calculations
@@ -30,6 +30,13 @@ Input         | Rational Approximation
 1.2345e-7     |	458e-7 / 371 
 1234567/89	  |	799e+4 / 576
 
+The program also accepts the name of some common constants: 
+
+Input         | Rational Approximation
+:---          | :--- 
+pi            |	355 / 113
+e             |	878 / 323
+
 #### A view of the program
 
 ![Screenshot](Screenshot1.png)
@@ -47,6 +54,13 @@ Alternatively, the source files, which are got from the **Releases** section too
 that includes the “.NET desktop development” workload. The program is made in C#, WPF.
 
 <br/>
+
+### References
+
+* \[1\] Farey sequence — https://en.wikipedia.org/wiki/Farey_sequence
+* \[2\] Rational approximation to a decimal number — https://www.johndcook.com/rational_approximation.html
+
+
 <br/>
 <br/>
 
