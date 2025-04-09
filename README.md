@@ -53,8 +53,6 @@ Download and unzip the latest archive from the **Releases** section. Launch the 
 Alternatively, the source files, which are got from the **Releases** section too, can be compiled in Visual Studio 2022
 that includes the “.NET desktop development” workload. The program is made in C#, WPF.
 
-<br/>
-
 ### References
 
 * \[1\] Farey sequence — https://en.wikipedia.org/wiki/Farey_sequence

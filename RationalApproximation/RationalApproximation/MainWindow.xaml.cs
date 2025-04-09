@@ -28,7 +28,7 @@ namespace RationalApproximation
         const int ACCEPTABLE_PERCENT_ERROR = 10;
         readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 333 );
         readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 333 );
-        readonly TimeSpan MIN_DURATION_PROGRESS = TimeSpan.FromMilliseconds( 333 );
+        readonly TimeSpan MIN_DURATION_PROGRESS = TimeSpan.FromMilliseconds( 444 );
 
         bool mLoaded = false;
         bool mIsRestoreError = false;
@@ -108,6 +108,13 @@ namespace RationalApproximation
         }
 
         private void textBoxInput_TextChanged( object sender, TextChangedEventArgs e )
+        {
+            if( !mLoaded ) return;
+
+            RestartCalculationTimer( );
+        }
+
+        private void textBoxInput_SelectionChanged( object sender, RoutedEventArgs e )
         {
             if( !mLoaded ) return;
 
@@ -214,8 +221,7 @@ namespace RationalApproximation
                 string error_text = $"Something went wrong.\r\n\r\n{exc.Message}";
                 if( Debugger.IsAttached ) error_text = $"{error_text}\r\n{exc.StackTrace}";
 
-                runError.Text = error_text;
-                ShowOneRichTextBox( richTextBoxError );
+                ShowError( error_text );
                 HideProgress( );
             }
         }
@@ -311,8 +317,7 @@ namespace RationalApproximation
 
                 if( denominator.IsZero )
                 {
-                    runError.Text = "Denominator cannot be zero.";
-                    ShowOneRichTextBox( richTextBoxError );
+                    ShowError( "Denominator cannot be zero." );
                     HideProgress( );
 
                     return null;
@@ -345,8 +350,7 @@ namespace RationalApproximation
 
             if( !int.TryParse( digits_as_string, out int digits ) || digits <= 0 || digits > MAX_MAXDIGITS )
             {
-                runError.Text = $"Please enter a valid number of digits between 1 and {MAX_MAXDIGITS}.";
-                ShowOneRichTextBox( richTextBoxError );
+                ShowError( $"Please enter a valid number of digits between 1 and {MAX_MAXDIGITS}." );
                 HideProgress( );
 
                 return null;
@@ -409,8 +413,7 @@ namespace RationalApproximation
 
                 Dispatcher.BeginInvoke( ( ) =>
                 {
-                    runError.Text = error_text;
-                    ShowOneRichTextBox( richTextBoxError );
+                    ShowError( error_text );
                     HideProgress( );
                 } );
             }
@@ -506,10 +509,12 @@ namespace RationalApproximation
                 if( !e.IsZero ) fraction_as_string = $"{fraction_as_string}e{( e >= 0 ? "+" : "" )}{e:D}";
                 if( !d.IsOne ) fraction_as_string = $"{fraction_as_string} / {d:D}";
 
-                floating_point_form = approximatedFraction.ToFloatString( cnc, 15 );
+                Fraction approximated_fraction_nonApprox = approximatedFraction.AsNonApprox( );
+
+                floating_point_form = approximated_fraction_nonApprox.ToFloatString( cnc, 15 );
 
                 CalculationContext ctx = new( cnc, 33 );
-                Fraction absolute_error = Fraction.Sub( approximatedFraction, initialFraction, ctx );
+                Fraction absolute_error = Fraction.Sub( approximated_fraction_nonApprox, initialFraction, ctx );
                 absolute_error_as_string = absolute_error.ToFloatString( cnc, 8 );
 
                 if( initialFraction.IsZero )
@@ -526,7 +531,7 @@ namespace RationalApproximation
                     if( percent_error_abs.CompareTo( cnc, new Fraction( ACCEPTABLE_PERCENT_ERROR ) ) > 0 )
                     {
                         remarks = $"{remarks}The error is too large. Not enough digits.\r\n";
-                        note = approximatedFraction.IsZero ? "(underflow)" : "(overflow)";
+                        note = approximated_fraction_nonApprox.IsZero ? "(underflow)" : "(overflow)";
                     }
                 }
 
@@ -539,6 +544,23 @@ namespace RationalApproximation
                         percent_error_as_string,
                         remarks
                     );
+            }
+        }
+
+        void ShowError( string errorText )
+        {
+            if( !Dispatcher.CheckAccess( ) )
+            {
+                Dispatcher.BeginInvoke( ( ) =>
+                {
+                    ShowError( errorText );
+                } );
+            }
+            else
+            {
+                runError.Text = errorText;
+                ShowOneRichTextBox( richTextBoxError );
+                HideProgress( );
             }
         }
 
@@ -625,6 +647,9 @@ namespace RationalApproximation
             case ProgressStatusEnum.DelayToHide:
                 labelPleaseWait.Visibility = Visibility.Hidden;
                 mProgressShownTime = DateTime.MinValue;
+                break;
+            case ProgressStatusEnum.None:
+                //
                 break;
             default:
                 Debug.Assert( false );
