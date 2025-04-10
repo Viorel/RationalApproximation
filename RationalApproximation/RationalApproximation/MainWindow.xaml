@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RationalApproximation"
         mc:Ignorable="d"
-        Title="Rational Approximation" Width="600" Height="371" d:Width="600" d:Height="371"    
+        Title="Rational Approximation" Width="800" Height="494" d:Width="800" d:Height="494"    
         SourceInitialized="Window_SourceInitialized"
         Loaded="Window_Loaded" 
         Closing="Window_Closing" Icon="/RationalApproximation.ico" 
@@ -54,8 +54,6 @@
                     <Paragraph Margin="14 0" FontWeight="Bold">
                         <Run Text="0.1234"/>
                         <LineBreak/>
-                        <Run Text="0.12(34)"/>
-                        <LineBreak/>
                         <Run Text="-12.345"/>
                         <LineBreak/>
                         <Run Text="12.345e-6"/>
@@ -63,7 +61,14 @@
                         <Run Text="1234/56789"/>
                         <LineBreak/>
                         <Run Text="-1234e+7/56789"/>
+                    </Paragraph>
+                    <Paragraph>
+                        To enter repeating decimals, use <Bold>(&#xA0;)</Bold>:
+                    </Paragraph>
+                    <Paragraph Margin="14 0" FontWeight="Bold">
+                        <Run Text="0.12(34)"/>
                         <LineBreak/>
+                        <Run Text="0.12(34)e-7"/>
                     </Paragraph>
                 </FlowDocument>
             </RichTextBox>
@@ -76,7 +81,7 @@
                         <Run Text="⚠️" FontSize="22" BaselineAlignment="Center"/>
                         <Run Text="ERROR" FontWeight="Bold" BaselineAlignment="Center"/>
                     </Paragraph>
-                    <Paragraph Padding="2 18" FontSize="14" >
+                    <Paragraph Padding="2 0" FontSize="14" >
                         <Run x:Name="runError" d:Text="Error"/>
                     </Paragraph>
                 </FlowDocument>

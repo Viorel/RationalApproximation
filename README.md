@@ -1,7 +1,7 @@
 # Rational Approximation
 
 An experimental tool to find the rational approximation of decimal numbers and fractions, 
-giving a maximum size (in digits) of nominator and denominator.
+specifying the maximum size (in digits) of nominator and denominator.
 
 #### Examples of calculations
 
@@ -12,7 +12,7 @@ Input         | Rational Approximation
 0.12345		  | 119 / 964
 1234 / 5678	  |	153 / 704
 
-The program support repeating (recurring) decimals using the “(&#xA0;)” notation, 
+The program supports repeating (recurring) decimals using the “(&#xA0;)” notation, 
 as well as exponents:
 
 Input         | Rational Approximation
@@ -55,8 +55,8 @@ that includes the “.NET desktop development” workload. The program is made in C#
 
 ### References
 
-* \[1\] Farey sequence — https://en.wikipedia.org/wiki/Farey_sequence
-* \[2\] Rational approximation to a decimal number — https://www.johndcook.com/rational_approximation.html
+* \[1\] _Farey sequence_ — https://en.wikipedia.org/wiki/Farey_sequence
+* \[2\] _Rational approximation to a decimal number_ — https://www.johndcook.com/rational_approximation.html
 
 
 <br/>

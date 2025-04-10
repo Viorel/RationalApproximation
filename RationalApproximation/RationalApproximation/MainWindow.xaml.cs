@@ -437,6 +437,8 @@ namespace RationalApproximation
                 ShowOneRichTextBox( richTextBoxResult );
             } );
 
+            cnc.TryThrow( );
+
             if( alternative == null )
             {
                 Dispatcher.BeginInvoke( ( ) =>
@@ -530,7 +532,7 @@ namespace RationalApproximation
 
                     if( percent_error_abs.CompareTo( cnc, new Fraction( ACCEPTABLE_PERCENT_ERROR ) ) > 0 )
                     {
-                        remarks = $"{remarks}The error is too large. Not enough digits.\r\n";
+                        remarks = $"{remarks}⚠️ The error is too large. Not enough digits.\r\n";
                         note = approximated_fraction_nonApprox.IsZero ? "(underflow)" : "(overflow)";
                     }
                 }

@@ -427,7 +427,7 @@ namespace RationalApproximationLibrary
         #region IEquatable<DFloat>
 
         /// <summary>
-        /// Check if this number is equel with another one.
+        /// Check if this number is equal with another one.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
