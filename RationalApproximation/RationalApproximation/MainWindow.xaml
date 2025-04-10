@@ -12,10 +12,10 @@
         >
     <Grid>
 
-        <Label VerticalAlignment="Top" Margin="10,10,0,0" Content="_Number or fraction to approximate:" Target="{Binding ElementName=textBoxInput}" FontWeight="Bold" HorizontalAlignment="Left" />
+        <Label VerticalAlignment="Top" Margin="10,10,0,0" Content="_Number or fraction to approximate:" Target="{Binding ElementName=textBoxInput}" HorizontalAlignment="Left" />
         <TextBox x:Name="textBoxInput" VerticalAlignment="Top" Margin="10,41,153,0" TextChanged="textBoxInput_TextChanged" SelectionChanged="textBoxInput_SelectionChanged" FontSize="22" Padding="3 3" d:Text="12345" VerticalContentAlignment="Center" Height="38" />
 
-        <Label VerticalAlignment="Top" Margin="0,13,30,0" Content="Maximum _digits:" Target="{Binding ElementName=comboBoxDigits}" FontWeight="Bold" HorizontalAlignment="Right" />
+        <Label VerticalAlignment="Top" Margin="0,13,40,0" Content="Maximum _digits:" Target="{Binding ElementName=comboBoxDigits}" HorizontalAlignment="Right" />
         <ComboBox x:Name="comboBoxDigits" IsEditable="True" VerticalAlignment="Top" Margin="0,41,10,0" HorizontalAlignment="Right" Width="126" FontSize="22"
                   Height="38" VerticalContentAlignment="Center" TextBoxBase.TextChanged="comboBoxDigits_TextChanged">
             <ComboBoxItem>1</ComboBoxItem>
@@ -28,7 +28,7 @@
             <ComboBoxItem>8</ComboBoxItem>
         </ComboBox>
 
-        <Label VerticalAlignment="Top" Margin="10,91,0,0" Content="_Results:" Target="{Binding ElementName=richTextBoxResult}" FontWeight="Bold" HorizontalAlignment="Left" />
+        <Label VerticalAlignment="Top" Margin="10,91,0,0" Content="_Results:" Target="{Binding ElementName=richTextBoxResult}" HorizontalAlignment="Left" />
 
         <Grid Margin="10,122,10,10" >
             <RichTextBox x:Name="richTextBoxNote" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="14"
@@ -224,7 +224,9 @@
                     </Section>
                 </FlowDocument>
             </RichTextBox>
-            <Label x:Name="labelPleaseWait" Content="Calculation in progress... " VerticalAlignment="Bottom" HorizontalAlignment="Left" BorderBrush="Gray" BorderThickness="0.25" 
+            <Label x:Name="labelPleaseWait" Content="Calculation in progress... " VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                   BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}" BorderThickness="0.75" 
+                   Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}"
                    Visibility="Hidden" d:Visibility="Visible"/>
         </Grid>
     </Grid>

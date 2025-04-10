@@ -26,8 +26,8 @@ namespace RationalApproximation
     {
         const int MAX_MAXDIGITS = 1000;
         const int ACCEPTABLE_PERCENT_ERROR = 10;
-        readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 333 );
-        readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 333 );
+        readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 444 );
+        readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 455 ); // (must be greater than 'DELAY_BEFORE_CALCULATION')
         readonly TimeSpan MIN_DURATION_PROGRESS = TimeSpan.FromMilliseconds( 444 );
 
         bool mLoaded = false;
@@ -118,7 +118,7 @@ namespace RationalApproximation
         {
             if( !mLoaded ) return;
 
-            RestartCalculationTimer( );
+            PostponeCalculationTimer( );
         }
 
         private void comboBoxDigits_TextChanged( object sender, TextChangedEventArgs e )
@@ -140,6 +140,11 @@ namespace RationalApproximation
             mCalculationTimer.Stop( );
             mCalculationTimer.Start( );
             ShowProgress( );
+        }
+
+        void PostponeCalculationTimer( )
+        {
+            if( mCalculationTimer.IsEnabled ) RestartCalculationTimer( );
         }
 
         void ApplySavedData( )
@@ -568,11 +573,14 @@ namespace RationalApproximation
 
         void ShowOneRichTextBox( RichTextBox richTextBox )
         {
+            bool was_visible = richTextBox.Visibility == Visibility.Visible;
+
             richTextBoxNote.Visibility = Visibility.Hidden;
             richTextBoxTypicalError.Visibility = Visibility.Hidden;
             richTextBoxError.Visibility = Visibility.Hidden;
             richTextBoxResult.Visibility = Visibility.Hidden;
 
+            if( !was_visible ) richTextBox.ScrollToHome( );
             richTextBox.Visibility = Visibility.Visible;
         }
 

@@ -55,8 +55,8 @@ that includes the “.NET desktop development” workload. The program is made in C#
 
 ### References
 
-* \[1\] _Farey sequence_ — https://en.wikipedia.org/wiki/Farey_sequence
-* \[2\] _Rational approximation to a decimal number_ — https://www.johndcook.com/rational_approximation.html
+* Wikipedia contributors. _Farey sequence_ — https://en.wikipedia.org/wiki/Farey_sequence
+* Cook, John D., _Rational approximation to a decimal number_ — https://www.johndcook.com/rational_approximation.html
 
 
 <br/>
