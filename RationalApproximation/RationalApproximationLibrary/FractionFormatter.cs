@@ -204,6 +204,8 @@ namespace RationalApproximationLibrary
             (d, int ed) = FractionUtilities.TrimZeroesGE0( cnc, d );
             e += en - ed;
 
+#if false
+            // 43/333 gives 0.1(291) instead of 0.(129)
             {
                 // make sure that 'n' in not shorter than 'd'
 
@@ -218,6 +220,17 @@ namespace RationalApproximationLibrary
                     e -= zeroes_to_add;
                 }
             }
+#else
+            {
+                while( n < d )
+                {
+                    var new_n = n * Bi10;
+                    if( new_n > d ) break;
+                    n = new_n;
+                    --e;
+                }
+            }
+#endif
 
             Debug.Assert( n > 0 );
             Debug.Assert( d > 0 );
