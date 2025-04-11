@@ -224,7 +224,7 @@ namespace RationalApproximationLibrary
             {
                 while( n < d )
                 {
-                    var new_n = n * Bi10;
+                    BigInteger new_n = n * Bi10;
                     if( new_n > d ) break;
                     n = new_n;
                     --e;
@@ -433,7 +433,7 @@ namespace RationalApproximationLibrary
             cnc.TryThrow( );
 
             Debug.Assert( intPart.Length == 1 );
-            Debug.Assert(  intPart == "0" && floatPart.Length == 0  || intPart != "0" );
+            Debug.Assert( intPart == "0" && floatPart.Length == 0 || intPart != "0" );
 
             if( ( intPart == "0" ? 0 : 1 ) + floatPart.Length + repeatingPart.Length > maxDigits ) throw new ApplicationException( "The number components are too large" );
 
@@ -642,7 +642,7 @@ namespace RationalApproximationLibrary
                 }
             }
 
-            Debug.Assert(  isNegative && sb.Length > 1  ||  !isNegative && sb.Length > 0  );
+            Debug.Assert( isNegative && sb.Length > 1 || !isNegative && sb.Length > 0 );
         }
 
         static void MakeGroups( StringBuilder sb, int startIndex )

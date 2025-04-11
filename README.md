@@ -48,7 +48,7 @@ The program runs in this environment:
 * Windows 11 or Windows 10 (64-bit),
 * .NET 9.
 
-Download and unzip the latest archive from the **Releases** section. Launch the **RationalApproximation** executable.
+To use it, download and unzip the latest archive from the **Releases** section. Launch the **RationalApproximation** executable.
 
 Alternatively, the source files, which are got from the **Releases** section too, can be compiled in Visual Studio 2022
 that includes the “.NET desktop development” workload. The program is made in C#, WPF.
@@ -58,7 +58,5 @@ that includes the “.NET desktop development” workload. The program is made in C#
 * Wikipedia contributors. _Farey sequence_ — https://en.wikipedia.org/wiki/Farey_sequence
 * Cook, John D., _Rational approximation to a decimal number_ — https://www.johndcook.com/rational_approximation.html
 
-
 <br/>
 <br/>
-
