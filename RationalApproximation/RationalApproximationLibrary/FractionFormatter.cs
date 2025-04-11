@@ -204,8 +204,6 @@ namespace RationalApproximationLibrary
             (d, int ed) = FractionUtilities.TrimZeroesGE0( cnc, d );
             e += en - ed;
 
-#if false
-            // 43/333 gives 0.1(291) instead of 0.(129)
             {
                 // make sure that 'n' in not shorter than 'd'
 
@@ -220,17 +218,6 @@ namespace RationalApproximationLibrary
                     e -= zeroes_to_add;
                 }
             }
-#else
-            {
-                while( n < d )
-                {
-                    BigInteger new_n = n * Bi10;
-                    if( new_n > d ) break;
-                    n = new_n;
-                    --e;
-                }
-            }
-#endif
 
             Debug.Assert( n > 0 );
             Debug.Assert( d > 0 );
@@ -456,10 +443,11 @@ namespace RationalApproximationLibrary
                     //      1.2345e-1 ==> 0.12345
                     //      1e-1 ==> 0.1
 
+                    (string newFloatPart, repeatingPart) = Optimise( intPart + floatPart, repeatingPart );
+
                     sb
                         .Append( "0." )
-                        .Append( intPart )
-                        .Append( floatPart );
+                        .Append( newFloatPart );
 
                     e = 0;
                 }
@@ -488,11 +476,11 @@ namespace RationalApproximationLibrary
 
                         Debug.Assert( e < 0 );
 
+                        (string newFloatPart, repeatingPart) = Optimise( new string( '0', -(int)e - 1 ) + intPart + floatPart, repeatingPart );
+
                         sb
                             .Append( "0." )
-                            .Append( '0', -(int)e - 1 )
-                            .Append( intPart )
-                            .Append( floatPart );
+                            .Append( newFloatPart );
 
                         e = BigInteger.Zero;
                     }
@@ -651,6 +639,22 @@ namespace RationalApproximationLibrary
             {
                 sb.Insert( i, '\u2009' );
             }
+        }
+
+        static (string newFloatPart, string newRepeatingPart) Optimise( string floatPart, string repeatingPart )
+        {
+            if( floatPart.Length == 0 || repeatingPart.Length == 0 )
+            {
+                return (floatPart, repeatingPart);
+            }
+
+            while( floatPart.Length > 0 && floatPart[^1] == repeatingPart[^1] )
+            {
+                floatPart = floatPart[..^1];
+                repeatingPart = repeatingPart[^1] + repeatingPart[..^1];
+            }
+
+            return (floatPart, repeatingPart);
         }
 
 
