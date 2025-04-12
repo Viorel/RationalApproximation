@@ -74,14 +74,12 @@
             </RichTextBox>
 
             <RichTextBox x:Name="richTextBoxError" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
+                         FontSize="14" Padding="2 10"
                          Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}"
                          d:Visibility="Hidden">
                 <FlowDocument>
-                    <Paragraph Padding="2 14 2 0" FontSize="14" >
-                        <Run Text="⚠️" FontSize="22" BaselineAlignment="Center"/>
-                        <Run Text="ERROR" FontWeight="Bold" BaselineAlignment="Center"/>
-                    </Paragraph>
-                    <Paragraph Padding="2 0" FontSize="14" >
+                    <Paragraph Padding="2 0" FontSize="14" FontWeight="Bold">
+                        <Run Text="⚠️" />
                         <Run x:Name="runError" d:Text="Error"/>
                     </Paragraph>
                 </FlowDocument>
