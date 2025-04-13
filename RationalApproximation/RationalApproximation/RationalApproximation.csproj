@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <Content Include="RationalApproximation.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
