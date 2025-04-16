@@ -553,7 +553,9 @@ namespace RationalApproximation
 
                     Fraction approximated_fraction_nonApprox = approximatedFraction.AsNonApprox( );
 
-                    floating_point_form = approximated_fraction_nonApprox.ToFloatString( cnc, 15 );
+                    // try to show more digits if it is a repeating decimal
+                    floating_point_form = approximated_fraction_nonApprox.ToFloatString( cnc, 50 );
+                    if( !floating_point_form.Contains( '(' ) ) floating_point_form = approximated_fraction_nonApprox.ToFloatString( cnc, 20 );
 
                     CalculationContext ctx = new( cnc, 33 );
                     Fraction absolute_error = Fraction.Sub( approximated_fraction_nonApprox, initialFraction, ctx );
