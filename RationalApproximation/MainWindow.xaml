@@ -10,222 +10,258 @@
         Loaded="Window_Loaded" 
         Closing="Window_Closing" 
         >
-    <Grid>
+    <Grid Margin="8">
 
-        <Label VerticalAlignment="Top" Margin="10,10,0,0" Content="_Number or fraction to approximate:" Target="{Binding ElementName=textBoxInput}" HorizontalAlignment="Left" />
-        <TextBox x:Name="textBoxInput" VerticalAlignment="Top" Margin="10,41,153,0" TextChanged="textBoxInput_TextChanged" SelectionChanged="textBoxInput_SelectionChanged" FontSize="22" Padding="3 3" d:Text="12345" VerticalContentAlignment="Center" Height="38" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <Label VerticalAlignment="Top" Margin="0,13,40,0" Content="Maximum _digits:" Target="{Binding ElementName=comboBoxDigits}" HorizontalAlignment="Right" />
-        <ComboBox x:Name="comboBoxDigits" IsEditable="True" VerticalAlignment="Top" Margin="0,41,10,0" HorizontalAlignment="Right" Width="126" FontSize="22"
-                  Height="38" VerticalContentAlignment="Center" TextBoxBase.TextChanged="comboBoxDigits_TextChanged">
-            <ComboBoxItem>1</ComboBoxItem>
-            <ComboBoxItem>2</ComboBoxItem>
-            <ComboBoxItem>3</ComboBoxItem>
-            <ComboBoxItem>4</ComboBoxItem>
-            <ComboBoxItem IsSelected="True">5</ComboBoxItem>
-            <ComboBoxItem>6</ComboBoxItem>
-            <ComboBoxItem>7</ComboBoxItem>
-            <ComboBoxItem>8</ComboBoxItem>
-        </ComboBox>
+        <Grid Grid.Column="0" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <Label VerticalAlignment="Top" Margin="10,91,0,0" Content="_Results:" Target="{Binding ElementName=richTextBoxResult}" HorizontalAlignment="Left" />
+            <Label Grid.Column="0" Grid.Row="0" Content="_Number or fraction to approximate:" Target="{Binding ElementName=textBoxInput}"/>
 
-        <Grid Margin="10,122,10,10" >
-            <RichTextBox x:Name="richTextBoxNote" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="14"
+            <TextBox x:Name="textBoxInput" Grid.Column="0" Grid.Row="1" TextChanged="textBoxInput_TextChanged" SelectionChanged="textBoxInput_SelectionChanged" 
+                     FontSize="22" Padding="3 3" Margin="0 0 8 0" d:Text="12345" VerticalContentAlignment="Center"  />
+
+            <Label Grid.Column="1" Grid.Row="0" Content="Maximum _digits:" Target="{Binding ElementName=comboBoxDigits}" />
+
+            <ComboBox x:Name="comboBoxDigits" Grid.Column="1" Grid.Row="1" IsEditable="True" Width="126" FontSize="22"
+                   TextBoxBase.TextChanged="comboBoxDigits_TextChanged">
+                <ComboBoxItem>1</ComboBoxItem>
+                <ComboBoxItem>2</ComboBoxItem>
+                <ComboBoxItem>3</ComboBoxItem>
+                <ComboBoxItem>4</ComboBoxItem>
+                <ComboBoxItem IsSelected="True">5</ComboBoxItem>
+                <ComboBoxItem>6</ComboBoxItem>
+                <ComboBoxItem>7</ComboBoxItem>
+                <ComboBoxItem>8</ComboBoxItem>
+            </ComboBox>
+            <Label Grid.Column="0" Grid.Row="2">
+                <TextBlock>
+                    <Italic>Examples:</Italic> 12.345, 12.3(45), 12.345e-7, 123/456, 123e8/456
+                </TextBlock>
+            </Label>
+        </Grid>
+
+        <Grid Grid.Column="0" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Label Grid.Column="0" Grid.Row="0" Content="_Results:" Target="{Binding ElementName=richTextBoxResult}" />
+
+            <Grid Grid.Column="0" Grid.Row="1">
+
+                <RichTextBox x:Name="richTextBoxNote" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="14"
                          d:Visibility="Hidden">
-                <FlowDocument>
-                    <Paragraph Padding="2 18">
-                        <Run Text="The results will be displayed here." FontStyle="Italic"/>
-                    </Paragraph>
-                </FlowDocument>
-            </RichTextBox>
-
-            <RichTextBox x:Name="richTextBoxTypicalError" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
-                         FontSize="14" Padding="2 10"
-                         Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}"
-                         d:Visibility="Hidden">
-                <FlowDocument>
-                    <Paragraph>
-                        <Run FontWeight="Bold" Text="⚠ The entered number is invalid."/>
-                    </Paragraph>
-                    <Paragraph>
-                        <Run Text="Please enter a decimal number or fraction. For example:"/>
-                    </Paragraph>
-                    <Paragraph Margin="14 0" FontWeight="Bold">
-                        <Run Text="0.1234"/>
-                        <LineBreak/>
-                        <Run Text="-12.345"/>
-                        <LineBreak/>
-                        <Run Text="12.345e-6"/>
-                        <LineBreak/>
-                        <Run Text="1234/56789"/>
-                        <LineBreak/>
-                        <Run Text="-1234e+7/56789"/>
-                    </Paragraph>
-                    <Paragraph>
-                        To enter repeating decimals, use <Bold>(&#xA0;)</Bold>:
-                    </Paragraph>
-                    <Paragraph Margin="14 0" FontWeight="Bold">
-                        <Run Text="0.12(34)"/>
-                        <LineBreak/>
-                        <Run Text="0.12(34)e-7"/>
-                    </Paragraph>
-                </FlowDocument>
-            </RichTextBox>
-
-            <RichTextBox x:Name="richTextBoxError" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
-                         FontSize="14" Padding="2 10"
-                         Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}"
-                         d:Visibility="Hidden">
-                <FlowDocument>
-                    <Paragraph Padding="2 0" FontSize="14" FontWeight="Bold">
-                        <Run Text="⚠️" />
-                        <Run x:Name="runError" d:Text="Error"/>
-                    </Paragraph>
-                </FlowDocument>
-            </RichTextBox>
-
-            <RichTextBox x:Name="richTextBoxResult" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
-                         IsReadOnlyCaretVisible="True" IsReadOnly="True" d:Visibility="Visible" >
-                <FlowDocument x:Name="flowDocument">
-                    <Section FontSize="18" Padding="0 8 0 0">
-                        <Table BorderBrush="Gray" BorderThickness="0" CellSpacing="0" Margin="4 0">
-                            <Table.Columns>
-                                <TableColumn Width="210" />
-                                <TableColumn />
-                            </Table.Columns>
-                            <TableRowGroup>
-                                <TableRow>
-                                    <TableCell Padding="0 4 0 0">
-                                        <Paragraph TextAlignment="Right">Rational Approximation:</Paragraph>
-                                    </TableCell>
-                                    <TableCell Padding="8 0 0 0">
-                                        <Paragraph TextAlignment="Left" >
-                                            <Run x:Name="runResultRationalApproximation" FontSize="24" FontWeight="Bold" d:Text="12345/67890"/>
-                                            <Run x:Name="runResultRationalApproximationNote" FontSize="18" FontStyle="Italic" d:Text="(underflow)"/>
-                                        </Paragraph>
-                                    </TableCell>
-                                </TableRow>
-                            </TableRowGroup>
-                            <TableRowGroup>
-                                <TableRow>
-                                    <TableCell TextAlignment="Right" >
-                                        <Paragraph >
-                                            Decimal equivalent:
-                                        </Paragraph>
-                                    </TableCell>
-                                    <TableCell Padding="8 0 0 0">
-                                        <Paragraph >
-                                            <Run x:Name="runResultFloatingPointForm" FontWeight="Bold" d:Text="0.1234567"/>
-                                        </Paragraph>
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>
-                                        <Paragraph TextAlignment="Right">
-                                            Absolute error:
-                                        </Paragraph>
-                                    </TableCell>
-                                    <TableCell Padding="8 0 0 0">
-                                        <Paragraph>
-                                            <Run x:Name="runResultAbsoluteError" FontWeight="Bold" d:Text="1.7e-10"/>
-                                        </Paragraph>
-                                    </TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell TextAlignment="Right">
-                                        <Paragraph>
-                                            Percent error:
-                                        </Paragraph>
-                                    </TableCell>
-                                    <TableCell Padding="8 0 0 0">
-                                        <Paragraph>
-                                            <Run x:Name="runResultPercentError" FontWeight="Bold" d:Text="0.02%"/>
-                                        </Paragraph>
-                                    </TableCell>
-                                </TableRow>
-                            </TableRowGroup>
-                        </Table>
-
-                        <Paragraph Padding="4 0" Margin="0 8">
-                            <Run x:Name="runResultRemarks" d:Text="Remarks"/>
+                    <FlowDocument>
+                        <Paragraph Padding="2 18">
+                            <Run Text="The results will be displayed here." FontStyle="Italic"/>
                         </Paragraph>
+                    </FlowDocument>
+                </RichTextBox>
 
-                        <Section x:Name="sectionAlternativeParent" FontSize="14">
-                            <Section x:Name="sectionAlternative">
-                                <Paragraph Padding="4 8 0 6" Margin="0 0">
-                                    <Run Text="The approximation that includes an exponent:"/>
-                                </Paragraph>
-                                <Table BorderBrush="LightGray" BorderThickness="0" CellSpacing="0" Margin="4 0">
-                                    <Table.Columns>
-                                        <TableColumn Width="210" />
-                                        <TableColumn />
-                                    </Table.Columns>
-                                    <TableRowGroup>
-                                        <TableRow>
-                                            <TableCell Padding="0 3 0 0">
-                                                <Paragraph TextAlignment="Right">Approximation:</Paragraph>
-                                            </TableCell>
-                                            <TableCell Padding="4 2 0 0">
-                                                <Paragraph TextAlignment="Left" >
-                                                    <Run x:Name="runResultRationalApproximation2" FontSize="16" FontWeight="Bold" d:Text="12345/67890"/>
-                                                    <Run x:Name="runResultRationalApproximationNote2" FontSize="14" FontStyle="Italic" d:Text="(underflow)"/>
-                                                </Paragraph>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableRowGroup>
-                                    <TableRowGroup>
-                                        <TableRow>
-                                            <TableCell TextAlignment="Right" >
-                                                <Paragraph >
-                                                    Decimal equivalent:
-                                                </Paragraph>
-                                            </TableCell>
-                                            <TableCell Padding="4 0 0 0">
-                                                <Paragraph >
-                                                    <Run x:Name="runResultFloatingPointForm2" FontWeight="Bold" d:Text="0.1234567"/>
-                                                </Paragraph>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell>
-                                                <Paragraph TextAlignment="Right">
-                                                    Absolute error:
-                                                </Paragraph>
-                                            </TableCell>
-                                            <TableCell Padding="4 0 0 0">
-                                                <Paragraph>
-                                                    <Run x:Name="runResultAbsoluteError2" FontWeight="Bold" d:Text="1.7e-10"/>
-                                                </Paragraph>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell TextAlignment="Right">
-                                                <Paragraph>
-                                                    Percent error:
-                                                </Paragraph>
-                                            </TableCell>
-                                            <TableCell Padding="4 0 0 0">
-                                                <Paragraph>
-                                                    <Run x:Name="runResultPercentError2" FontWeight="Bold" d:Text="0.02%"/>
-                                                </Paragraph>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableRowGroup>
-                                </Table>
+                <RichTextBox x:Name="richTextBoxTypicalError" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
+                         FontSize="14" Padding="2 10"
+                         Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}"
+                         d:Visibility="Hidden">
+                    <FlowDocument>
+                        <Paragraph>
+                            <Run FontWeight="Bold" Text="⚠ The entered number is invalid."/>
+                        </Paragraph>
+                        <Paragraph>
+                            <Run Text="Please enter a decimal number or fraction. For example:"/>
+                        </Paragraph>
+                        <Paragraph Margin="14 0" FontWeight="Bold">
+                            <Run Text="0.1234"/>
+                            <LineBreak/>
+                            <Run Text="-12.345"/>
+                            <LineBreak/>
+                            <Run Text="12.345e-6"/>
+                            <LineBreak/>
+                            <Run Text="1234/56789"/>
+                            <LineBreak/>
+                            <Run Text="-1234e+7/56789"/>
+                        </Paragraph>
+                        <Paragraph>
+                            To enter repeating decimals, use
+                            <Bold>(&#xA0;)</Bold> :
+                        </Paragraph>
+                        <Paragraph Margin="14 0" FontWeight="Bold">
+                            <Run Text="0.12(34)"/>
+                            <LineBreak/>
+                            <Run Text="0.12(34)e-7"/>
+                        </Paragraph>
+                    </FlowDocument>
+                </RichTextBox>
 
-                                <Paragraph Padding="4 4">
-                                    <Run x:Name="runResultRemarks2" d:Text="Remarks"/>
-                                </Paragraph>
+                <RichTextBox x:Name="richTextBoxError" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
+                         FontSize="14" Padding="2 10"
+                         Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}"
+                         d:Visibility="Hidden">
+                    <FlowDocument>
+                        <Paragraph Padding="2 0" FontSize="14" FontWeight="Bold">
+                            <Run Text="⚠️" />
+                            <Run x:Name="runError" d:Text="Error"/>
+                        </Paragraph>
+                    </FlowDocument>
+                </RichTextBox>
+
+                <RichTextBox x:Name="richTextBoxResult" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
+                         IsReadOnlyCaretVisible="True" IsReadOnly="True" d:Visibility="Visible" >
+                    <FlowDocument x:Name="flowDocument">
+                        <Section FontSize="18" Padding="0 8 0 0">
+                            <Table BorderBrush="Gray" BorderThickness="0" CellSpacing="0" Margin="4 0">
+                                <Table.Columns>
+                                    <TableColumn Width="210" />
+                                    <TableColumn />
+                                </Table.Columns>
+                                <TableRowGroup>
+                                    <TableRow>
+                                        <TableCell Padding="0 4 0 0">
+                                            <Paragraph TextAlignment="Right">Rational Approximation:</Paragraph>
+                                        </TableCell>
+                                        <TableCell Padding="8 0 0 0">
+                                            <Paragraph TextAlignment="Left" >
+                                                <Run x:Name="runResultRationalApproximation" FontSize="24" FontWeight="Bold" d:Text="12345/67890"/>
+                                                <Run x:Name="runResultRationalApproximationNote" FontSize="18" FontStyle="Italic" d:Text="(underflow)"/>
+                                            </Paragraph>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableRowGroup>
+                                <TableRowGroup>
+                                    <TableRow>
+                                        <TableCell TextAlignment="Right" >
+                                            <Paragraph >
+                                                Decimal equivalent:
+                                            </Paragraph>
+                                        </TableCell>
+                                        <TableCell Padding="8 0 0 0">
+                                            <Paragraph >
+                                                <Run x:Name="runResultFloatingPointForm" FontWeight="Bold" d:Text="0.1234567"/>
+                                            </Paragraph>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>
+                                            <Paragraph TextAlignment="Right">
+                                                Absolute error:
+                                            </Paragraph>
+                                        </TableCell>
+                                        <TableCell Padding="8 0 0 0">
+                                            <Paragraph>
+                                                <Run x:Name="runResultAbsoluteError" FontWeight="Bold" d:Text="1.7e-10"/>
+                                            </Paragraph>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell TextAlignment="Right">
+                                            <Paragraph>
+                                                Percent error:
+                                            </Paragraph>
+                                        </TableCell>
+                                        <TableCell Padding="8 0 0 0">
+                                            <Paragraph>
+                                                <Run x:Name="runResultPercentError" FontWeight="Bold" d:Text="0.02%"/>
+                                            </Paragraph>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableRowGroup>
+                            </Table>
+
+                            <Paragraph Padding="4 0" Margin="0 8">
+                                <Run x:Name="runResultRemarks" d:Text="Remarks"/>
+                            </Paragraph>
+
+                            <Section x:Name="sectionAlternativeParent" FontSize="14">
+                                <Section x:Name="sectionAlternative">
+                                    <Paragraph Padding="4 8 0 6" Margin="0 0">
+                                        <Run Text="The approximation that includes an exponent:"/>
+                                    </Paragraph>
+                                    <Table BorderBrush="LightGray" BorderThickness="0" CellSpacing="0" Margin="4 0">
+                                        <Table.Columns>
+                                            <TableColumn Width="210" />
+                                            <TableColumn />
+                                        </Table.Columns>
+                                        <TableRowGroup>
+                                            <TableRow>
+                                                <TableCell Padding="0 3 0 0">
+                                                    <Paragraph TextAlignment="Right">Approximation:</Paragraph>
+                                                </TableCell>
+                                                <TableCell Padding="4 2 0 0">
+                                                    <Paragraph TextAlignment="Left" >
+                                                        <Run x:Name="runResultRationalApproximation2" FontSize="16" FontWeight="Bold" d:Text="12345/67890"/>
+                                                        <Run x:Name="runResultRationalApproximationNote2" FontSize="14" FontStyle="Italic" d:Text="(underflow)"/>
+                                                    </Paragraph>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableRowGroup>
+                                        <TableRowGroup>
+                                            <TableRow>
+                                                <TableCell TextAlignment="Right" >
+                                                    <Paragraph >
+                                                        Decimal equivalent:
+                                                    </Paragraph>
+                                                </TableCell>
+                                                <TableCell Padding="4 0 0 0">
+                                                    <Paragraph >
+                                                        <Run x:Name="runResultFloatingPointForm2" FontWeight="Bold" d:Text="0.1234567"/>
+                                                    </Paragraph>
+                                                </TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell>
+                                                    <Paragraph TextAlignment="Right">
+                                                        Absolute error:
+                                                    </Paragraph>
+                                                </TableCell>
+                                                <TableCell Padding="4 0 0 0">
+                                                    <Paragraph>
+                                                        <Run x:Name="runResultAbsoluteError2" FontWeight="Bold" d:Text="1.7e-10"/>
+                                                    </Paragraph>
+                                                </TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell TextAlignment="Right">
+                                                    <Paragraph>
+                                                        Percent error:
+                                                    </Paragraph>
+                                                </TableCell>
+                                                <TableCell Padding="4 0 0 0">
+                                                    <Paragraph>
+                                                        <Run x:Name="runResultPercentError2" FontWeight="Bold" d:Text="0.02%"/>
+                                                    </Paragraph>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableRowGroup>
+                                    </Table>
+
+                                    <Paragraph Padding="4 4">
+                                        <Run x:Name="runResultRemarks2" d:Text="Remarks"/>
+                                    </Paragraph>
+                                </Section>
                             </Section>
                         </Section>
-                    </Section>
-                </FlowDocument>
-            </RichTextBox>
-            <Label x:Name="labelPleaseWait" Content="Calculation in progress... " VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                    </FlowDocument>
+                </RichTextBox>
+
+                <Label x:Name="labelPleaseWait" Content="Calculation in progress... " VerticalAlignment="Bottom" HorizontalAlignment="Left"
                    BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}" BorderThickness="0.75" 
                    Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}"
                    Visibility="Hidden" d:Visibility="Visible"/>
+
+            </Grid>
         </Grid>
     </Grid>
 </Window>
