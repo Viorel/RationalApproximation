@@ -201,8 +201,8 @@ namespace RationalApproximation
             {
                 StopThread( );
 
-                Fraction? fraction = GetInputFraction( );
-                if( fraction == null ) return;
+                Input? input = GetInput( );
+                if( input == null ) return;
 
                 int? digits = GetDigitsToKeep( );
                 if( digits == null ) return;
@@ -210,7 +210,7 @@ namespace RationalApproximation
                 mLastCancellable = new SimpleCancellable( );
                 mCalculationThread = new Thread( ( ) =>
                     {
-                        CalculationThreadProc( mLastCancellable, fraction, digits.Value );
+                        CalculationThreadProc( mLastCancellable, input, digits.Value );
                     } )
                 {
                     IsBackground = true,
@@ -231,7 +231,16 @@ namespace RationalApproximation
             }
         }
 
-        Fraction? GetInputFraction( )
+        class Input
+        {
+            // one of:
+            public Fraction? mFraction;
+            // or
+            public IReadOnlyList<BigInteger>? mContinuedFractionItems;
+            public bool mIsContinuedFractionNegative;
+        }
+
+        Input? GetInput( )
         {
             string input_text = textBoxInput.Text;
 
@@ -249,6 +258,8 @@ namespace RationalApproximation
 
             if( m.Groups["integer"].Success )
             {
+                // decimal
+
                 bool is_negative = m.Groups["negative"].Success;
                 bool is_exponent_negative = m.Groups["negative_exponent"].Success;
                 Group floating_group = m.Groups["floating"];
@@ -284,7 +295,7 @@ namespace RationalApproximation
 
                         Fraction fraction = new( is_negative ? -nominator : nominator, denominator, exponent );
 
-                        return fraction;
+                        return new Input { mFraction = fraction };
                     }
                     else
                     {
@@ -295,7 +306,7 @@ namespace RationalApproximation
 
                         Fraction fraction = new( is_negative ? -significant : significant, BigInteger.One, adjusted_exponent );
 
-                        return fraction;
+                        return new Input { mFraction = fraction };
                     }
                 }
                 else
@@ -304,12 +315,14 @@ namespace RationalApproximation
 
                     Fraction fraction = new( is_negative ? -integer : integer, BigInteger.One, exponent );
 
-                    return fraction;
+                    return new Input { mFraction = fraction };
                 }
             }
 
             if( m.Groups["nominator"].Success )
             {
+                // rational
+
                 bool is_negative = m.Groups["negative"].Success;
                 bool is_exponent_negative = m.Groups["negative_exponent"].Success;
                 Group denominator_group = m.Groups["denominator"];
@@ -345,17 +358,41 @@ namespace RationalApproximation
                     }
                 }
 
-                return fraction;
+                return new Input { mFraction = fraction };
+            }
+
+            if( m.Groups["first"].Success )
+            {
+                // continued fraction
+
+                bool is_negative = m.Groups["negative"].Success;
+                BigInteger first = BigInteger.Parse( m.Groups["first"].Value );
+
+                List<BigInteger> list = [first];
+
+                Group next_group = m.Groups["next"];
+
+                if( next_group.Success )
+                {
+                    foreach( Capture c in next_group.Captures )
+                    {
+                        BigInteger item = BigInteger.Parse( c.Value );
+
+                        list.Add( item );
+                    }
+                }
+
+                return new Input { mContinuedFractionItems = list, mIsContinuedFractionNegative = is_negative };
             }
 
             if( m.Groups["pi"].Success )
             {
-                return Fraction.Pi;
+                return new Input { mFraction = Fraction.Pi };
             }
 
             if( m.Groups["e"].Success )
             {
-                return Fraction.EulerNumber;
+                return new Input { mFraction = Fraction.EulerNumber };
             }
 
             ShowOneRichTextBox( richTextBoxTypicalError );
@@ -379,10 +416,35 @@ namespace RationalApproximation
             return digits;
         }
 
-        void CalculationThreadProc( ICancellable cnc, Fraction fraction, int maxDigits )
+        void CalculationThreadProc( ICancellable cnc, Input input, int maxDigits )
         {
             try
             {
+                Fraction fraction;
+
+                if( input.mFraction != null )
+                {
+                    fraction = input.mFraction;
+                }
+                else if( input.mContinuedFractionItems != null )
+                {
+                    var p =
+                        ContinuedFractionUtilities
+                            .EnumerateContinuedFractionConvergents( input.mContinuedFractionItems )
+                            .Last( );
+
+                    fraction = p.d.IsZero ? p.n < 0 ? Fraction.NegativeInfinity : p.n > 0 ? Fraction.PositiveInfinity : Fraction.Undefined
+                               : new Fraction( p.d < 0 ? -p.n : p.n, BigInteger.Abs( p.d ) );
+
+                    CalculationContext ctx = new( cnc, 33 );
+
+                    if( input.mIsContinuedFractionNegative ) fraction = Fraction.Neg( fraction, ctx );
+                }
+                else
+                {
+                    throw new InvalidOperationException( );
+                }
+
                 Fraction approximated_fraction;
                 Fraction? alternative;
 
@@ -819,24 +881,31 @@ namespace RationalApproximation
         [GeneratedRegex( """
             (?xni)^ \s* 
             (
-             (
+             ( # decimal
               (\+|(?<negative>-))? \s* (?<integer>\d+) 
               ((\s* \. \s* (?<floating>\d+)) | \.)? 
               (\s* \( \s* (?<repeating>\d+) \s* \) )? 
               (\s* [eE] \s* (\+|(?<negative_exponent>-))? \s* (?<exponent>\d+))? 
              )
             |
-             (
+             ( # rational
               (\+|(?<negative>-))? \s* (?<nominator>\d+) 
               (\s* [eE] \s* (\+|(?<negative_exponent>-))? \s* (?<exponent>\d+))? 
               \s* / \s*
               (?<denominator>\d+) 
              )
             |
+             ( # continued fraction
+              (\+|(?<negative>-))? \s*
+              \[
+              \s* (?<first>[\-\+]?\d+)(\s*[;,\s]\s*(?<next>[\-\+]?\d+))* \s*
+              \]?
+             )
+            |
              (?<pi>pi | π)
             |
              (?<e>e)
-                        )
+            )
             \s* $
             """, RegexOptions.IgnorePatternWhitespace
         )]
