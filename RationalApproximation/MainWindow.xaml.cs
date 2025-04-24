@@ -290,10 +290,10 @@ namespace RationalApproximation
                         BigInteger significant = integer * floating_magnitude + floating;
                         BigInteger significant_with_repeating = significant * repeating_magnitude + repeating;
                         Debug.Assert( significant_with_repeating >= significant );
-                        BigInteger nominator = significant_with_repeating - significant;
+                        BigInteger numerator = significant_with_repeating - significant;
                         BigInteger denominator = floating_magnitude * ( repeating_magnitude - 1 );
 
-                        Fraction fraction = new( is_negative ? -nominator : nominator, denominator, exponent );
+                        Fraction fraction = new( is_negative ? -numerator : numerator, denominator, exponent );
 
                         return new Input { mFraction = fraction };
                     }
@@ -319,7 +319,7 @@ namespace RationalApproximation
                 }
             }
 
-            if( m.Groups["nominator"].Success )
+            if( m.Groups["numerator"].Success )
             {
                 // rational
 
@@ -328,14 +328,14 @@ namespace RationalApproximation
                 Group denominator_group = m.Groups["denominator"];
                 Group exponent_group = m.Groups["exponent"];
 
-                BigInteger nominator = BigInteger.Parse( m.Groups["nominator"].Value, CultureInfo.InvariantCulture );
+                BigInteger numerator = BigInteger.Parse( m.Groups["numerator"].Value, CultureInfo.InvariantCulture );
                 BigInteger denominator = denominator_group.Success ? BigInteger.Parse( denominator_group.Value, CultureInfo.InvariantCulture ) : BigInteger.One;
                 BigInteger exponent = exponent_group.Success ? BigInteger.Parse( exponent_group.Value, CultureInfo.InvariantCulture ) : BigInteger.Zero;
                 if( is_exponent_negative ) exponent = -exponent;
 
                 Fraction fraction;
 
-                if( nominator.IsZero )
+                if( numerator.IsZero )
                 {
                     if( denominator.IsZero )
                     {
@@ -354,7 +354,7 @@ namespace RationalApproximation
                     }
                     else
                     {
-                        fraction = new Fraction( is_negative ? -nominator : nominator, denominator, exponent );
+                        fraction = new Fraction( is_negative ? -numerator : numerator, denominator, exponent );
                     }
                 }
 
@@ -889,7 +889,7 @@ namespace RationalApproximation
              )
             |
              ( # rational
-              (\+|(?<negative>-))? \s* (?<nominator>\d+) 
+              (\+|(?<negative>-))? \s* (?<numerator>\d+) 
               (\s* [eE] \s* (\+|(?<negative_exponent>-))? \s* (?<exponent>\d+))? 
               \s* / \s*
               (?<denominator>\d+) 

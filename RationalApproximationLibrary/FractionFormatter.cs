@@ -116,7 +116,7 @@ namespace RationalApproximationLibrary
             }
             else
             {
-                // 123, 123/78, 123//78, maybe with eXXX after nominator and/or denominator
+                // 123, 123/78, 123//78, maybe with eXXX after numerator and/or denominator
 
                 Group dg = m.Groups["D"];
 

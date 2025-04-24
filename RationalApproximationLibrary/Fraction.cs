@@ -576,7 +576,7 @@ namespace RationalApproximationLibrary
         }
 
         /// <summary>
-        /// Reduce large nominator and denominator, and adjust exponent. (Find the best approximation).
+        /// Reduce large numerator and denominator, and adjust exponent. (Find the best approximation).
         /// </summary>
         /// <param name="ctx"></param>
         /// <returns></returns>
@@ -1013,7 +1013,7 @@ namespace RationalApproximationLibrary
         }
 
         /// <summary>
-        /// Extract nominator, denominator and exponent.
+        /// Extract numerator, denominator and exponent.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>

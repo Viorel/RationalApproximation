@@ -12,7 +12,7 @@ namespace RationalApproximationLibrary
     {
         public static IEnumerable<BigInteger> EnumerateContinuedFraction( BigInteger n, BigInteger d )
         {
-            if( n < 0 ) throw new ArgumentException( "Negative nominator", nameof( n ) );
+            if( n < 0 ) throw new ArgumentException( "Negative numerator", nameof( n ) );
             //if( d.IsZero ) throw new ArgumentException( "Zero denominator", nameof( d ) );
 
             for(; ; )
