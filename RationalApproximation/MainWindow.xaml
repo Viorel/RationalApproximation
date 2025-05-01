@@ -28,7 +28,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <Label Grid.Column="0" Grid.Row="0" Content="_Number or fraction to approximate:" Target="{Binding ElementName=textBoxInput}"/>
+            <Label Grid.Column="0" Grid.Row="0" Content="Decimal or rational _number to approximate:" Target="{Binding ElementName=textBoxInput}"/>
 
             <ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto" Height="38" Margin="0 0 8 0" Padding="0">
                 <TextBox x:Name="textBoxInput" TextChanged="textBoxInput_TextChanged" SelectionChanged="textBoxInput_SelectionChanged" 
