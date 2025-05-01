@@ -30,9 +30,11 @@
 
             <Label Grid.Column="0" Grid.Row="0" Content="_Number or fraction to approximate:" Target="{Binding ElementName=textBoxInput}"/>
 
-            <TextBox x:Name="textBoxInput" Grid.Column="0" Grid.Row="1" TextChanged="textBoxInput_TextChanged" SelectionChanged="textBoxInput_SelectionChanged" 
-                     FontSize="22" Padding="3 3" Margin="0 0 8 0" d:Text="12345" VerticalContentAlignment="Center"  />
-
+            <ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto" Height="38" Margin="0 0 8 0" Padding="0">
+                <TextBox x:Name="textBoxInput" TextChanged="textBoxInput_TextChanged" SelectionChanged="textBoxInput_SelectionChanged" 
+                     FontSize="22" Padding="1 3" Margin="0" d:Text="12345" VerticalContentAlignment="Center"  />
+            </ScrollViewer>
+            
             <Label Grid.Column="1" Grid.Row="0" Content="Maximum _digits:" Target="{Binding ElementName=comboBoxDigits}" />
 
             <ComboBox x:Name="comboBoxDigits" Grid.Column="1" Grid.Row="1" IsEditable="True" Width="126" FontSize="22"
