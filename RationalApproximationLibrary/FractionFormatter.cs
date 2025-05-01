@@ -267,7 +267,7 @@ namespace RationalApproximationLibrary
 
                 StringBuilder sbf = new( );
 
-                List<BigInteger> remainders = [];
+                Dictionary<BigInteger, int> remainders = [];
 
                 int repeating_index = -1;
                 string repeating_part = "";
@@ -275,7 +275,7 @@ namespace RationalApproximationLibrary
                 for( int i = 0; r != 0 && i < allowed_space; ++i )
                 {
                     cnc.TryThrow( );
-                    remainders.Add( r );
+                    remainders.Add( r, 0 );
 
                     (BigInteger qf, r) = BigInteger.DivRem( r * Bi10, d );
 
@@ -284,9 +284,7 @@ namespace RationalApproximationLibrary
 
                     sbf.Append( qf.ToString( "D", CultureInfo.InvariantCulture ) );
 
-                    repeating_index = remainders.IndexOf( r );
-
-                    if( repeating_index >= 0 )
+                    if( remainders.TryGetValue( r, out repeating_index ) )
                     {
                         repeating_part = sbf.ToString( repeating_index, sbf.Length - repeating_index );
                         sbf.Length = repeating_index;
