@@ -1,7 +1,7 @@
 # Rational Approximation
 
-An experimental tool to find the rational approximation of decimal numbers and fractions, 
-specifying the maximum size (in digits) of nominator and denominator.
+An experimental tool to find the rational approximation of decimal and rational numbers, 
+specifying the maximum size of nominator and denominator (in digits).
 
 #### Examples of calculations
 
@@ -36,6 +36,8 @@ Input         | Rational Approximation
 :---          | :--- 
 pi            |	355 / 113
 e             |	878 / 323
+
+(The approximate values of these constants consist of about 300 digits).
 
 #### A view of the program
 
