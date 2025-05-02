@@ -47,7 +47,7 @@ namespace RationalApproximation
             richTextBoxNote.Visibility = Visibility.Visible;
             richTextBoxTypicalError.Visibility = Visibility.Hidden;
             richTextBoxError.Visibility = Visibility.Hidden;
-            richTextBoxResult.Visibility = Visibility.Hidden;
+            richTextBoxResults.Visibility = Visibility.Hidden;
             labelPleaseWait.Visibility = Visibility.Hidden;
 
             mCalculationTimer = new DispatcherTimer
@@ -520,6 +520,23 @@ namespace RationalApproximation
 
             Dispatcher.BeginInvoke( ( ) =>
             {
+                EventHandler? ev = null;
+                ev = ( object? s, EventArgs a ) =>
+                {
+                    richTextBoxResults.LayoutUpdated -= ev;
+
+                    {
+                        // adjust page width to avoid wrapping
+
+                        string text = new TextRange( richTextBoxResults.Document.ContentStart, richTextBoxResults.Document.ContentEnd ).Text;
+                        FormattedText ft = new( text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                            new Typeface( richTextBoxResults.FontFamily, richTextBoxResults.FontStyle, FontWeights.Bold, richTextBoxResults.FontStretch ), richTextBoxResults.FontSize, Brushes.Black, VisualTreeHelper.GetDpi( richTextBoxResults ).PixelsPerDip );
+
+                        richTextBoxResults.Document.PageWidth = ft.Width + 100;
+                    }
+                };
+                richTextBoxResults.LayoutUpdated += ev;
+
                 runResultRationalApproximation.Text = strings.fraction_as_string;
                 runResultRationalApproximationNote.Text = strings.note;
                 runResultFloatingPointForm.Text = strings.floating_point_form;
@@ -527,7 +544,7 @@ namespace RationalApproximation
                 runResultPercentError.Text = strings.percent_error_as_string;
                 runResultRemarks.Text = strings.remarks;
 
-                ShowOneRichTextBox( richTextBoxResult );
+                ShowOneRichTextBox( richTextBoxResults );
             } );
 
             cnc.TryThrow( );
@@ -678,7 +695,7 @@ namespace RationalApproximation
             richTextBoxNote.Visibility = Visibility.Hidden;
             richTextBoxTypicalError.Visibility = Visibility.Hidden;
             richTextBoxError.Visibility = Visibility.Hidden;
-            richTextBoxResult.Visibility = Visibility.Hidden;
+            richTextBoxResults.Visibility = Visibility.Hidden;
 
             if( !was_visible ) richTextBox.ScrollToHome( );
             richTextBox.Visibility = Visibility.Visible;

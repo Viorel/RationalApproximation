@@ -123,8 +123,6 @@ namespace RationalApproximationLibrary
 
         internal static (BigInteger n, BigInteger d) NDEtoND( (BigInteger n, BigInteger d, BigInteger e) f )
         {
-            Debug.Assert( f.e >= -1000 && f.e <= 1000 );
-
             var t =
                 f.e == 0 ? (f.n, f.d)
                 : f.e > 0 ? (f.n * BigInteger.Pow( Bi10, checked((int)f.e) ), f.d)

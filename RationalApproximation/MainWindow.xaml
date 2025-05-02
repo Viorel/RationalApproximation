@@ -61,7 +61,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Label Grid.Column="0" Grid.Row="0" Content="_Results:" Target="{Binding ElementName=richTextBoxResult}" />
+            <Label Grid.Column="0" Grid.Row="0" Content="_Results:" Target="{Binding ElementName=richTextBoxResults}" />
 
             <Grid Grid.Column="0" Grid.Row="1">
 
@@ -120,10 +120,10 @@
                     </FlowDocument>
                 </RichTextBox>
 
-                <RichTextBox x:Name="richTextBoxResult" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
-                         IsReadOnlyCaretVisible="True" IsReadOnly="True" d:Visibility="Visible" >
+                <RichTextBox x:Name="richTextBoxResults" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" 
+                         IsReadOnlyCaretVisible="True" IsReadOnly="True" FontSize="24" d:Visibility="Visible" >
                     <FlowDocument x:Name="flowDocument">
-                        <Section FontSize="18" Padding="0 8 0 0">
+                        <Section Padding="0 8 0 0">
                             <Table BorderBrush="Gray" BorderThickness="0" CellSpacing="0" Margin="4 0">
                                 <Table.Columns>
                                     <TableColumn Width="210" />
@@ -131,20 +131,20 @@
                                 </Table.Columns>
                                 <TableRowGroup>
                                     <TableRow>
-                                        <TableCell Padding="0 4 0 0">
-                                            <Paragraph TextAlignment="Right">Rational Approximation:</Paragraph>
+                                        <TableCell Padding="0 4 0 0" FontSize="18">
+                                            <Paragraph TextAlignment="Right">Rational approximation:</Paragraph>
                                         </TableCell>
                                         <TableCell Padding="8 0 0 0">
                                             <Paragraph TextAlignment="Left" >
-                                                <Run x:Name="runResultRationalApproximation" FontSize="24" FontWeight="Bold" d:Text="12345/67890"/>
+                                                <Run x:Name="runResultRationalApproximation" FontWeight="Bold" d:Text="12345/67890"/>
                                                 <Run x:Name="runResultRationalApproximationNote" FontSize="18" FontStyle="Italic" d:Text="(underflow)"/>
                                             </Paragraph>
                                         </TableCell>
                                     </TableRow>
                                 </TableRowGroup>
                                 <TableRowGroup>
-                                    <TableRow>
-                                        <TableCell TextAlignment="Right" >
+                                    <TableRow FontSize="18">
+                                        <TableCell TextAlignment="Right">
                                             <Paragraph >
                                                 Decimal equivalent:
                                             </Paragraph>
@@ -155,7 +155,7 @@
                                             </Paragraph>
                                         </TableCell>
                                     </TableRow>
-                                    <TableRow>
+                                    <TableRow FontSize="18">
                                         <TableCell>
                                             <Paragraph TextAlignment="Right">
                                                 Absolute error:
@@ -167,7 +167,7 @@
                                             </Paragraph>
                                         </TableCell>
                                     </TableRow>
-                                    <TableRow>
+                                    <TableRow FontSize="18">
                                         <TableCell TextAlignment="Right">
                                             <Paragraph>
                                                 Percent error:
@@ -182,7 +182,7 @@
                                 </TableRowGroup>
                             </Table>
 
-                            <Paragraph Padding="4 0" Margin="0 8">
+                            <Paragraph Padding="4 0" Margin="0 8" FontSize="18">
                                 <Run x:Name="runResultRemarks" d:Text="Remarks"/>
                             </Paragraph>
 
@@ -203,8 +203,8 @@
                                                 </TableCell>
                                                 <TableCell Padding="4 2 0 0">
                                                     <Paragraph TextAlignment="Left" >
-                                                        <Run x:Name="runResultRationalApproximation2" FontSize="16" FontWeight="Bold" d:Text="12345/67890"/>
-                                                        <Run x:Name="runResultRationalApproximationNote2" FontSize="14" FontStyle="Italic" d:Text="(underflow)"/>
+                                                        <Run x:Name="runResultRationalApproximation2" FontWeight="Bold" d:Text="12345/67890"/>
+                                                        <Run x:Name="runResultRationalApproximationNote2" FontStyle="Italic" d:Text="(underflow)"/>
                                                     </Paragraph>
                                                 </TableCell>
                                             </TableRow>
@@ -258,7 +258,7 @@
                     </FlowDocument>
                 </RichTextBox>
 
-                <Label x:Name="labelPleaseWait" Content="Calculation in progress... " VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                <Label x:Name="labelPleaseWait" Content="&#x23F3; Calculation in progress... " VerticalAlignment="Bottom" HorizontalAlignment="Left"
                    BorderBrush="{DynamicResource {x:Static SystemColors.WindowFrameBrushKey}}" BorderThickness="0.75" 
                    Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}" Foreground="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}"
                    Visibility="Hidden" d:Visibility="Visible"/>
