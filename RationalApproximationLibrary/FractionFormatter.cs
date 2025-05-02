@@ -174,7 +174,6 @@ namespace RationalApproximationLibrary
             return sb.ToString( );
         }
 
-
         static void FormatFloatingPoint( ICancellable cnc, StringBuilder sb, BigInteger n, BigInteger d, BigInteger e, int maxDigits, bool group = false )
         {
             // Simplification using GCD is not done here; 
@@ -275,7 +274,7 @@ namespace RationalApproximationLibrary
                 for( int i = 0; r != 0 && i < allowed_space; ++i )
                 {
                     cnc.TryThrow( );
-                    remainders.Add( r, 0 );
+                    remainders.Add( r, i );
 
                     (BigInteger qf, r) = BigInteger.DivRem( r * Bi10, d );
 
