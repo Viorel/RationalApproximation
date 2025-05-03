@@ -649,7 +649,7 @@ namespace RationalApproximation
                         Fraction percent_error = Fraction.Mul( Fraction.Div( absolute_error, initialFraction, ctx ), new Fraction( 100 ), ctx );
                         Fraction percent_error_abs = Fraction.Abs( percent_error, ctx );
 
-                        percent_error_as_string = $"{( percent_error.IsApprox ? "≈" : "" )}{percent_error.ToDouble( ):g4}%";
+                        percent_error_as_string = string.Create( CultureInfo.InvariantCulture, $"{( percent_error.IsApprox ? "≈" : "" )}{percent_error.ToDouble( ):g4}%" );
 
                         if( percent_error_abs.CompareTo( cnc, new Fraction( ACCEPTABLE_PERCENT_ERROR ) ) > 0 )
                         {
