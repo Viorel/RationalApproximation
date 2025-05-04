@@ -83,7 +83,7 @@
                             <Run FontWeight="Bold" Text="⚠ The entered number is invalid."/>
                         </Paragraph>
                         <Paragraph>
-                            <Run Text="Please enter a decimal number or fraction. For example:"/>
+                            <Run Text="Please enter a decimal or rational number. For example:"/>
                         </Paragraph>
                         <Paragraph Margin="14 0" FontWeight="Bold">
                             <Run Text="0.1234"/>

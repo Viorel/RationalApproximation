@@ -37,7 +37,7 @@ Input         | Rational Approximation
 pi            |	355 / 113
 e             |	878 / 323
 
-(The approximate values of these constants consist of about 300 digits).
+(The approximate values of these constants consist of 1000 digits).
 
 #### A view of the program
 

@@ -268,7 +268,6 @@ namespace RationalApproximationLibrary
 
                 Dictionary<BigInteger, int> remainders = [];
 
-                int repeating_index = -1;
                 string repeating_part = "";
 
                 for( int i = 0; r != 0 && i < allowed_space; ++i )
@@ -283,7 +282,7 @@ namespace RationalApproximationLibrary
 
                     sbf.Append( qf.ToString( "D", CultureInfo.InvariantCulture ) );
 
-                    if( remainders.TryGetValue( r, out repeating_index ) )
+                    if( remainders.TryGetValue( r, out int repeating_index ) )
                     {
                         repeating_part = sbf.ToString( repeating_index, sbf.Length - repeating_index );
                         sbf.Length = repeating_index;
