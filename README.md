@@ -1,11 +1,11 @@
 # Rational Approximation
 
 An experimental tool to find the rational approximation of decimal and rational numbers, 
-specifying the maximum size of nominator and denominator (in digits).
+specifying the maximum size of numerator and denominator (in digits).
 
 #### Examples of calculations
 
-(_Let us limit the nominator and denominator to three digits_).
+(_Let us limit the numerator and denominator to three digits_).
 
 Input         | Rational Approximation
 :---          | :--- 
@@ -52,7 +52,7 @@ The program runs in this environment:
 
 To use it, download and unzip the latest archive from the **Releases** section. Launch the **RationalApproximation** executable.
 
-Alternatively, the source files, which are got from the **Releases** section too, can be compiled in Visual Studio 2022
+Alternatively, the source files can be got from the **Releases** section and compiled in Visual Studio 2026
 that includes the “.NET desktop development” workload. The program is made in C#, WPF.
 
 ### References
