@@ -769,6 +769,10 @@ namespace RationalApproximation
             {
             case ProgressStatusEnum.DelayToShow:
                 labelPleaseWait.Visibility = Visibility.Visible;
+                if( richTextBoxError.Visibility == Visibility.Visible || richTextBoxTypicalError.Visibility == Visibility.Visible )
+                {
+                    ShowOneRichTextBox( richTextBoxNote );
+                }
                 mProgressShownTime = DateTime.Now;
                 break;
             case ProgressStatusEnum.DelayToHide:
@@ -929,7 +933,7 @@ namespace RationalApproximation
              (?<e>e)
             )
             \s* $
-            """, RegexOptions.IgnorePatternWhitespace
+            """, RegexOptions.IgnorePatternWhitespace, 20_000
         )]
         private static partial Regex RegexToParseInput( );
 
