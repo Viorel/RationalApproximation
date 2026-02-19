@@ -353,16 +353,22 @@ namespace RationalApproximationLibrary
                 }
                 break;
                 default: // nm/dm == x
+                    Debug.Assert( dm > 0 );
+
                     return (nm, dm);
                 }
             }
 
             if( 2 * N * d1 * d0 <= ( n1 * d0 + n0 * d1 ) * D )
             {
+                Debug.Assert( d0 > 0 );
+
                 return (n0, d0);
             }
             else
             {
+                Debug.Assert( d1 > 0 );
+
                 return (n1, d1);
             }
         }
@@ -451,7 +457,7 @@ namespace RationalApproximationLibrary
 
                 (BigInteger n, BigInteger d) result1 = FareyInternal( cnc, d1, n1, maxVal );
 
-                Debug.Assert( result1.n < result1.d );
+                Debug.Assert( result1.n <= result1.d );
 
                 if( !result1.n.IsZero )
                 {
@@ -505,12 +511,25 @@ namespace RationalApproximationLibrary
                 } while( n1 < d1 );
 
                 (BigInteger d, BigInteger n) result1 = FareyInternal( cnc, d1, n1, maxVal );
-                Debug.Assert( result1.d > 0 );
+                Debug.Assert( result1.d >= 0 );
                 Debug.Assert( result1.n > 0 );
                 Debug.Assert( E >= e1 );
-                (BigInteger n, BigInteger d, BigInteger e) diff1 = FractionUtilities.Abs( FractionUtilities.DiffSmallDiffE( this_Abs_NDE, (result1.n, result1.d, e1) ) );
+                (BigInteger n, BigInteger d, BigInteger e) diff1;
+                bool diff1_succeeded;
 
-                if( diff1.n.IsZero ) return new Fraction( IsNegative ? -result1.n : result1.n, result1.d, e1, isApprox: IsApprox, isSimplified: false );
+                if( result1.d == 0 )
+                {
+                    diff1 = default;
+                    diff1_succeeded = false;
+                }
+                else
+                {
+                    diff1 = FractionUtilities.Abs( FractionUtilities.DiffSmallDiffE( this_Abs_NDE, (result1.n, result1.d, e1) ) );
+
+                    if( diff1.n.IsZero ) return new Fraction( IsNegative ? -result1.n : result1.n, result1.d, e1, isApprox: IsApprox, isSimplified: false );
+
+                    diff1_succeeded = true;
+                }
 
                 BigInteger n2 = n1;
                 BigInteger d2 = d1 * Bi10;
@@ -523,7 +542,7 @@ namespace RationalApproximationLibrary
 
                 if( diff2.n.IsZero ) return new Fraction( IsNegative ? -result2.n : result2.n, result2.d, e2, isApprox: IsApprox, isSimplified: false );
 
-                if( FractionUtilities.Compare( diff1, diff2 ) <= 0 )
+                if( diff1_succeeded && FractionUtilities.Compare( diff1, diff2 ) <= 0 )
                 {
                     return new Fraction( IsNegative ? -result1.n : result1.n, result1.d, e1, isApprox: true, isSimplified: false );
                 }
@@ -557,14 +576,28 @@ namespace RationalApproximationLibrary
                 BigInteger e2 = e1 - 1;
 
                 (BigInteger d, BigInteger n) result2 = FareyInternal( cnc, d2, n2, maxVal );
-                Debug.Assert( result2.d > 0 );
+                Debug.Assert( result2.d >= 0 );
                 Debug.Assert( result2.n > 0 );
                 Debug.Assert( E <= e2 );
-                (BigInteger n, BigInteger d, BigInteger e) diff2 = FractionUtilities.Abs( FractionUtilities.DiffSmallDiffE( this_Abs_NDE, (result2.n, result2.d, e2) ) );
+                (BigInteger n, BigInteger d, BigInteger e) diff2;
+                bool diff2_succeeded;
 
-                if( diff2.n.IsZero ) return new Fraction( IsNegative ? -result2.n : result2.n, result2.d, e2, isApprox: IsApprox, isSimplified: false );
+                if( result2.d.IsZero )
+                {
+                    diff2 = default;
+                    diff2_succeeded = false;
+                }
+                else
+                {
+                    diff2 = FractionUtilities.Abs( FractionUtilities.DiffSmallDiffE( this_Abs_NDE, (result2.n, result2.d, e2) ) );
 
-                if( FractionUtilities.Compare( diff1, diff2 ) <= 0 )
+                    if( diff2.n.IsZero ) return new Fraction( IsNegative ? -result2.n : result2.n, result2.d, e2, isApprox: IsApprox, isSimplified: false );
+
+                    diff2_succeeded = true;
+                }
+
+
+                if( !diff2_succeeded || FractionUtilities.Compare( diff1, diff2 ) <= 0 )
                 {
                     return new Fraction( IsNegative ? -result1.n : result1.n, result1.d, e1, isApprox: true, isSimplified: false );
                 }

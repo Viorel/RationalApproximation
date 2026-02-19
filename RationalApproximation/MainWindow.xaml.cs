@@ -24,8 +24,11 @@ namespace RationalApproximation
     /// </summary>
     public partial class MainWindow : Window
     {
-        const int MAX_MAXDIGITS = 1000;
+        const ulong MAX_DIGITS = 100;
+        const ulong MAX_BITS = 512;
+        const ulong MAX_UPMOST = ulong.MaxValue;
         const int ACCEPTABLE_PERCENT_ERROR = 10;
+        const int CONTEXT_DIGITS = 33;
         readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 444 );
         readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 455 ); // (must be greater than 'DELAY_BEFORE_CALCULATION')
         readonly TimeSpan MIN_DURATION_PROGRESS = TimeSpan.FromMilliseconds( 444 );
@@ -128,6 +131,13 @@ namespace RationalApproximation
             RestartCalculationTimer( );
         }
 
+        private void comboBoxMode_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        {
+            if( !mLoaded ) return;
+
+            RestartCalculationTimer( );
+        }
+
         private void CalculationTimer_Tick( object? sender, EventArgs e )
         {
             mCalculationTimer.Stop( );
@@ -154,8 +164,10 @@ namespace RationalApproximation
                 textBoxInput.Text = Properties.Settings.Default.LastInput;
                 if( !string.IsNullOrWhiteSpace( Properties.Settings.Default.LastMaxDigits ) )
                 {
-                    comboBoxDigits.Text = Properties.Settings.Default.LastMaxDigits.Trim( );
+                    comboBoxDigits.Text = Properties.Settings.Default.LastMaxDigits?.Trim( );
                 }
+                comboBoxMode.SelectedValue = Properties.Settings.Default.LastMode?.Trim( );
+                comboBoxMode.SelectedItem ??= comboBoxMode.Items[0];
             }
             catch( Exception exc )
             {
@@ -170,6 +182,7 @@ namespace RationalApproximation
         {
             Properties.Settings.Default.LastInput = textBoxInput.Text;
             Properties.Settings.Default.LastMaxDigits = comboBoxDigits.Text;
+            Properties.Settings.Default.LastMode = comboBoxMode.SelectedValue?.ToString( );
 
             Properties.Settings.Default.Save( );
         }
@@ -201,16 +214,19 @@ namespace RationalApproximation
             {
                 StopThread( );
 
-                Input? input = GetInput( );
+                Input? input = TryGetInput( );
                 if( input == null ) return;
 
-                int? digits = GetDigitsToKeep( );
-                if( digits == null ) return;
+                ModeEnum mode = TryGetMode( );
+                if( mode == ModeEnum.None ) return;
+
+                ulong? limit = TryGetLimit( mode );
+                if( limit == null ) return;
 
                 mLastCancellable = new SimpleCancellable( );
                 mCalculationThread = new Thread( ( ) =>
                     {
-                        CalculationThreadProc( mLastCancellable, input, digits.Value );
+                        CalculationThreadProc( mLastCancellable, input, limit.Value, mode );
                     } )
                 {
                     IsBackground = true,
@@ -231,6 +247,14 @@ namespace RationalApproximation
             }
         }
 
+        enum ModeEnum
+        {
+            None,
+            Digits,
+            Bits,
+            Utmost,
+        }
+
         class Input
         {
             // one of:
@@ -240,7 +264,7 @@ namespace RationalApproximation
             public bool mIsContinuedFractionNegative;
         }
 
-        Input? GetInput( )
+        Input? TryGetInput( )
         {
             string input_text = textBoxInput.Text;
 
@@ -401,22 +425,68 @@ namespace RationalApproximation
             return null;
         }
 
-        int? GetDigitsToKeep( )
+        ulong? TryGetLimit( ModeEnum mode )
         {
-            string digits_as_string = comboBoxDigits.Text;
+            string limit_as_string = comboBoxDigits.Text;
 
-            if( !int.TryParse( digits_as_string, out int digits ) || digits <= 0 || digits > MAX_MAXDIGITS )
+            switch( mode )
             {
-                ShowError( $"Please enter a valid number of digits between 1 and {MAX_MAXDIGITS}." );
-                HideProgress( );
+            case ModeEnum.Digits:
+                if( !ulong.TryParse( limit_as_string, out ulong digits ) || digits <= 0 || digits > MAX_DIGITS )
+                {
+                    ShowError( $"Please enter a valid number of digits between 1 and {MAX_DIGITS}." );
+                    HideProgress( );
 
-                return null;
+                    return null;
+                }
+
+                return digits;
+            case ModeEnum.Bits:
+                if( !ulong.TryParse( limit_as_string, out ulong bits ) || bits <= 0 || bits > MAX_BITS )
+                {
+                    ShowError( $"Please enter a valid number of bits between 1 and {MAX_BITS}." );
+                    HideProgress( );
+
+                    return null;
+                }
+
+                return bits;
+            case ModeEnum.Utmost:
+                if( !ulong.TryParse( limit_as_string, out ulong upmost ) || upmost <= 0 || upmost > MAX_UPMOST )
+                {
+                    ShowError( $"Please enter a valid limit between 1 and {MAX_UPMOST}." );
+                    HideProgress( );
+
+                    return null;
+                }
+
+                return upmost;
+            default:
+                throw new InvalidOperationException( );
             }
-
-            return digits;
         }
 
-        void CalculationThreadProc( ICancellable cnc, Input input, int maxDigits )
+        ModeEnum TryGetMode( )
+        {
+            string mode_value = comboBoxMode.SelectedValue?.ToString( ) ?? "";
+            var mode = mode_value switch
+            {
+                "digits" => ModeEnum.Digits,
+                "bits" => ModeEnum.Bits,
+                "utmost" => ModeEnum.Utmost,
+                _ => ModeEnum.None,
+            };
+
+            if( mode == ModeEnum.None )
+            {
+                ShowError( "Please select the mode." );
+                HideProgress( );
+            }
+
+            return mode;
+        }
+
+        void CalculationThreadProc( ICancellable cnc, Input input, ulong limit, ModeEnum mode )
         {
             try
             {
@@ -436,7 +506,7 @@ namespace RationalApproximation
                     fraction = p.d.IsZero ? p.n < 0 ? Fraction.NegativeInfinity : p.n > 0 ? Fraction.PositiveInfinity : Fraction.Undefined
                                : new Fraction( p.d < 0 ? -p.n : p.n, BigInteger.Abs( p.d ) );
 
-                    CalculationContext ctx = new( cnc, 33 );
+                    CalculationContext ctx = new( cnc, CONTEXT_DIGITS );
 
                     if( input.mIsContinuedFractionNegative ) fraction = Fraction.Neg( fraction, ctx );
                 }
@@ -448,6 +518,14 @@ namespace RationalApproximation
                 Fraction approximated_fraction;
                 Fraction? alternative;
 
+                BigInteger utmost = mode switch
+                {
+                    ModeEnum.Digits => BigInteger.Pow( 10, checked((int)limit) ) - 1,
+                    ModeEnum.Bits => BigInteger.Pow( 2, checked((int)limit) ) - 1,
+                    ModeEnum.Utmost => limit,
+                    _ => throw new InvalidOperationException( ),
+                };
+
                 if( !fraction.IsNormal )
                 {
                     approximated_fraction = fraction;
@@ -455,14 +533,13 @@ namespace RationalApproximation
                 }
                 else
                 {
-                    BigInteger max_val = BigInteger.Pow( 10, maxDigits ) - 1;
-                    CalculationContext ctx = new( cnc, 33 );
+                    CalculationContext ctx = new( cnc, CONTEXT_DIGITS );
 
                     approximated_fraction =
                         fraction
                             .Simplify( ctx )
                             .TrimZeroes( cnc )
-                            .ReduceNoE( cnc, max_val )
+                            .ReduceNoE( cnc, utmost )
                             .TrimZeroes( cnc );
 
                     alternative = null;
@@ -483,13 +560,13 @@ namespace RationalApproximation
                                 fraction
                                     .Simplify( ctx )
                                     .TrimZeroes( cnc )
-                                    .Reduce( cnc, max_val )
+                                    .Reduce( cnc, utmost )
                                     .TrimZeroes( cnc );
                         }
                     }
                 }
 
-                ShowResult( cnc, fraction, approximated_fraction, alternative, maxDigits );
+                ShowResult( cnc, fraction, approximated_fraction, alternative, utmost );
                 HideProgress( );
             }
             catch( OperationCanceledException ) // also 'TaskCanceledException'
@@ -512,9 +589,9 @@ namespace RationalApproximation
             }
         }
 
-        void ShowResult( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, Fraction? alternative, int maxDigits )
+        void ShowResult( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, Fraction? alternative, BigInteger utmost )
         {
-            var strings = MakeStrings( cnc, initialFraction, approximatedFraction, maxDigits );
+            var strings = MakeStrings( cnc, initialFraction, approximatedFraction, utmost );
 
             strings.remarks = strings.remarks.TrimEnd( );
 
@@ -549,7 +626,11 @@ namespace RationalApproximation
 
             cnc.TryThrow( );
 
-            if( alternative == null )
+            CalculationContext ctx = new( cnc, CONTEXT_DIGITS );
+
+            if( alternative == null || alternative.Equals( cnc, approximatedFraction ) ||
+                Fraction.Abs( Fraction.Sub( alternative, initialFraction, ctx ), ctx ).CompareTo( Fraction.Abs( Fraction.Sub( approximatedFraction, initialFraction, ctx ), ctx ) ) > 0
+                )
             {
                 Dispatcher.BeginInvoke( ( ) =>
                 {
@@ -558,7 +639,7 @@ namespace RationalApproximation
             }
             else
             {
-                var strings_alternative = MakeStrings( cnc, initialFraction, alternative, maxDigits );
+                var strings_alternative = MakeStrings( cnc, initialFraction, alternative, utmost );
                 strings_alternative.remarks = strings_alternative.remarks.TrimEnd( );
 
                 Dispatcher.BeginInvoke( ( ) =>
@@ -575,15 +656,15 @@ namespace RationalApproximation
             }
 
             static
-                (
-                    string fraction_as_string,
-                    string note,
-                    string floating_point_form,
-                    string absolute_error_as_string,
-                    string percent_error_as_string,
-                    string remarks
-                )
-                MakeStrings( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, int maxDigits )
+            (
+                string fraction_as_string,
+                string note,
+                string floating_point_form,
+                string absolute_error_as_string,
+                string percent_error_as_string,
+                string remarks
+            )
+            MakeStrings( ICancellable cnc, Fraction initialFraction, Fraction approximatedFraction, BigInteger utmost )
             {
                 string fraction_as_string;
                 string note = "";
@@ -607,20 +688,20 @@ namespace RationalApproximation
                         note = "(exact)";
                     }
 
-                    BigInteger max_value_exclusive_div_10 = BigInteger.Pow( 10, maxDigits - 1 );
+                    BigInteger utmost_div_10 = BigInteger.Divide( utmost, 10 );
 
                     bool is_negative = approximatedFraction.IsNegative;
                     BigInteger n = BigInteger.Abs( approximatedFraction.N );
                     BigInteger d = approximatedFraction.D;
                     BigInteger e = approximatedFraction.E;
 
-                    while( e > 0 && n < max_value_exclusive_div_10 )
+                    while( e > 0 && n <= utmost_div_10 )
                     {
                         n *= 10;
                         --e;
                     }
 
-                    while( e < 0 && d < max_value_exclusive_div_10 )
+                    while( e < 0 && d <= utmost_div_10 )
                     {
                         d *= 10;
                         ++e;
@@ -636,7 +717,7 @@ namespace RationalApproximation
                     floating_point_form = approximated_fraction_nonApprox.ToFloatString( cnc, 50 );
                     if( !floating_point_form.Contains( '(' ) ) floating_point_form = approximated_fraction_nonApprox.ToFloatString( cnc, 20 );
 
-                    CalculationContext ctx = new( cnc, 33 );
+                    CalculationContext ctx = new( cnc, CONTEXT_DIGITS );
                     Fraction absolute_error = Fraction.Sub( approximated_fraction_nonApprox, initialFraction, ctx );
                     absolute_error_as_string = absolute_error.ToFloatString( cnc, 8 );
 

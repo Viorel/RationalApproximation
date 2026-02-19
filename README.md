@@ -1,7 +1,7 @@
 # Rational Approximation
 
 An experimental tool to find the rational approximation of decimal and rational numbers, 
-specifying the maximum size of numerator and denominator (in digits).
+specifying the maximum numerator and denominator (in digits, bits or maximal value).
 
 #### Examples of calculations
 
@@ -39,6 +39,14 @@ e             |	878 / 323
 
 (The approximate values of these constants consist of 1000 digits).
 
+As an experimental feature, the program also supports non-periodic continued fractions:
+
+Input         | Rational Approximation
+:---          | :--- 
+[5; 6, 7, 8]  |	919 / 178
+
+
+
 #### A view of the program
 
 ![Screenshot](Screenshot1.png)
@@ -52,8 +60,8 @@ The program runs in this environment:
 
 To use it, download and unzip the latest archive from the **Releases** section. Launch the **RationalApproximation** executable.
 
-Alternatively, the source files can be got from the **Releases** section and compiled in Visual Studio 2026
-that includes the “.NET desktop development” workload. The program is made in C#, WPF.
+Alternatively, the program can be compiled in Visual Studio 2026. The “.NET desktop development” workload is required.
+The source files can be got from the **Releases** section. The program is made in C#, WPF.
 
 ### References
 
