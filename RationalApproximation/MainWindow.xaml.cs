@@ -28,6 +28,7 @@ namespace RationalApproximation
         const ulong MAX_BITS = 512;
         const ulong MAX_UPMOST = ulong.MaxValue;
         const int ACCEPTABLE_PERCENT_ERROR = 10;
+        const int CONTEXT_DIGITS = 33;
         readonly TimeSpan DELAY_BEFORE_CALCULATION = TimeSpan.FromMilliseconds( 444 );
         readonly TimeSpan DELAY_BEFORE_PROGRESS = TimeSpan.FromMilliseconds( 455 ); // (must be greater than 'DELAY_BEFORE_CALCULATION')
         readonly TimeSpan MIN_DURATION_PROGRESS = TimeSpan.FromMilliseconds( 444 );
@@ -505,7 +506,7 @@ namespace RationalApproximation
                     fraction = p.d.IsZero ? p.n < 0 ? Fraction.NegativeInfinity : p.n > 0 ? Fraction.PositiveInfinity : Fraction.Undefined
                                : new Fraction( p.d < 0 ? -p.n : p.n, BigInteger.Abs( p.d ) );
 
-                    CalculationContext ctx = new( cnc, 33 );
+                    CalculationContext ctx = new( cnc, CONTEXT_DIGITS );
 
                     if( input.mIsContinuedFractionNegative ) fraction = Fraction.Neg( fraction, ctx );
                 }
@@ -532,7 +533,7 @@ namespace RationalApproximation
                 }
                 else
                 {
-                    CalculationContext ctx = new( cnc, 33 );
+                    CalculationContext ctx = new( cnc, CONTEXT_DIGITS );
 
                     approximated_fraction =
                         fraction
@@ -625,7 +626,11 @@ namespace RationalApproximation
 
             cnc.TryThrow( );
 
-            if( alternative == null )
+            CalculationContext ctx = new( cnc, CONTEXT_DIGITS );
+
+            if( alternative == null || alternative.Equals( cnc, approximatedFraction ) ||
+                Fraction.Abs( Fraction.Sub( alternative, initialFraction, ctx ), ctx ).CompareTo( Fraction.Abs( Fraction.Sub( approximatedFraction, initialFraction, ctx ), ctx ) ) > 0
+                )
             {
                 Dispatcher.BeginInvoke( ( ) =>
                 {
@@ -712,7 +717,7 @@ namespace RationalApproximation
                     floating_point_form = approximated_fraction_nonApprox.ToFloatString( cnc, 50 );
                     if( !floating_point_form.Contains( '(' ) ) floating_point_form = approximated_fraction_nonApprox.ToFloatString( cnc, 20 );
 
-                    CalculationContext ctx = new( cnc, 33 );
+                    CalculationContext ctx = new( cnc, CONTEXT_DIGITS );
                     Fraction absolute_error = Fraction.Sub( approximated_fraction_nonApprox, initialFraction, ctx );
                     absolute_error_as_string = absolute_error.ToFloatString( cnc, 8 );
 

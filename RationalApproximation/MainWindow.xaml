@@ -30,7 +30,7 @@
 
             <Label Grid.Column="0" Grid.Row="0" Content="Decimal or rational _number to approximate:" Target="{Binding ElementName=textBoxInput}"/>
 
-            <ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto" Height="38" Margin="0 0 8 0" Padding="0">
+            <ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollBarVisibility="Auto" Height="38" Margin="0 0 16 0" Padding="0">
                 <TextBox x:Name="textBoxInput" TextChanged="textBoxInput_TextChanged" SelectionChanged="textBoxInput_SelectionChanged" 
                      FontSize="22" Padding="1 3" Margin="0" d:Text="12345" VerticalContentAlignment="Center"  />
             </ScrollViewer>
@@ -48,9 +48,11 @@
                     <ComboBoxItem>6</ComboBoxItem>
                     <ComboBoxItem>7</ComboBoxItem>
                     <ComboBoxItem>8</ComboBoxItem>
+                    <ComboBoxItem>9</ComboBoxItem>
+                    <ComboBoxItem>10</ComboBoxItem>
                 </ComboBox>
-                <ComboBox x:Name="comboBoxMode" SelectedValuePath="Tag" IsEditable="False" Width="90"
-                          FontSize="18" SelectionChanged="comboBoxMode_SelectionChanged" VerticalContentAlignment="Center">
+                <ComboBox x:Name="comboBoxMode" SelectedValuePath="Tag" IsEditable="False" Width="86"
+                          FontSize="16" SelectionChanged="comboBoxMode_SelectionChanged" VerticalContentAlignment="Center">
                     <ComboBoxItem Tag="digits" IsSelected="True">digits</ComboBoxItem>
                     <ComboBoxItem Tag="bits">bits</ComboBoxItem>
                     <ComboBoxItem Tag="utmost">utmost</ComboBoxItem>
@@ -63,13 +65,13 @@
             </Label>
         </Grid>
 
-        <Grid Grid.Column="0" Grid.Row="1">
+        <Grid Grid.Column="0" Grid.Row="1" Margin="0 8 0 0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Label Grid.Column="0" Grid.Row="0" Content="_Results:" Target="{Binding ElementName=richTextBoxResults}" />
+            <Label Grid.Column="0" Grid.Row="0" Content="_Results:" Target="{Binding ElementName=richTextBoxResults}"/>
 
             <Grid Grid.Column="0" Grid.Row="1">
 

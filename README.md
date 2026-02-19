@@ -1,7 +1,7 @@
 # Rational Approximation
 
 An experimental tool to find the rational approximation of decimal and rational numbers, 
-specifying the maximum size of numerator and denominator (in digits or bits).
+specifying the maximum numerator and denominator (in digits, bits or maximal value).
 
 #### Examples of calculations
 
